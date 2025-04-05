@@ -1,8 +1,8 @@
 import React from "react";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import L from "leaflet";
-import busIconpng from "../../public/bus.png";
-import directionIconpng from "../../public/direction.png";
+import busIconpng from "../assets/bus.png";
+import directionIconpng from "../assets/direction.png";
 
 import "leaflet-rotatedmarker";
 
