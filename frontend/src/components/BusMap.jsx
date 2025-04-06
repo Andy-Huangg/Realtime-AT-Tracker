@@ -5,6 +5,7 @@ import busIconpng from "../assets/bus.png";
 import directionIconpng from "../assets/direction.png";
 
 import "leaflet-rotatedmarker";
+import RotatingBusMarker from "./RotatingBusMarker";
 
 const busIcon = new L.Icon({
   iconUrl: busIconpng,
@@ -67,7 +68,7 @@ const BusMap = ({ vehicles }) => {
               </Popup>
             </Marker>
             {vehicle.bearing !== null && vehicle.bearing !== undefined && (
-              <Marker
+              <RotatingBusMarker
                 position={[vehicle.latitude, vehicle.longitude]}
                 icon={directionIcon}
                 rotationAngle={vehicle.bearing}
