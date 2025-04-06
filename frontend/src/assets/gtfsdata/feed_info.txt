@@ -1,0 +1,2 @@
+feed_publisher_name,feed_publisher_url,feed_lang,feed_start_date,feed_end_date,feed_version
+Auckland Transport,http://www.aucklandtransport.govt.nz,en,20250325,20250616,VDV_EOD_112_5_A_Expedited_245.08584581070801447360327021181CU22
