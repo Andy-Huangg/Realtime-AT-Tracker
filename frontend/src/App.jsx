@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import BusMap from "./components/BusMap.jsx";
 import "./App.css";
+import { parseRoutes } from "./utils/routeUtils.js";
 
 const API_URL = import.meta.env.VITE_API_URL;
 const FETCH_INTERVAL = 30000;
@@ -10,13 +11,14 @@ function App() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [lastUpdate, setLastUpdate] = useState(null);
+  const routes = useMemo(() => parseRoutes(), []);
 
   const fetchVehicleData = async () => {
     setError(null);
 
     try {
       const response = await fetch(`${API_URL}/api/vehicles`);
-      console.log(response);
+
       if (!response.ok) {
         let errorMsg = `HTTP error! Status: ${response.status}`;
         try {
@@ -28,11 +30,7 @@ function App() {
         throw new Error(errorMsg);
       }
       const data = await response.json();
-      console.log(
-        `Fetched ${
-          data.vehicles?.length || 0
-        } vehicles at ${new Date().toLocaleTimeString()}`
-      );
+
       setVehicles(data.vehicles || []);
       setLastUpdate(data.lastUpdate);
     } catch (error) {
