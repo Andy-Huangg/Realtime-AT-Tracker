@@ -1,0 +1,129 @@
+.route-selector-container {
+  position: relative;
+  width: 300px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
+    Arial, sans-serif;
+}
+
+.route-selector-header {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 15px;
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.dropdown-arrow {
+  margin-left: 10px;
+  color: #6c757d;
+}
+
+.route-dropdown-container {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  max-height: 300px;
+  background-color: white;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  margin-top: 5px;
+  z-index: 1000;
+}
+
+.route-search {
+  width: calc(100% - 20px);
+  padding: 8px 10px;
+  margin: 10px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.route-options-list {
+  max-height: 230px;
+  overflow-y: auto;
+  padding: 0 10px;
+}
+
+.route-option {
+  padding: 5px 0;
+  border-bottom: 1px solid #f1f1f1;
+}
+
+.route-option label {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.route-option input {
+  margin-right: 10px;
+}
+
+.transport-type {
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 3px;
+  margin-right: 5px;
+}
+
+.transport-type.bus {
+  background-color: #28a745;
+  color: white;
+}
+
+.transport-type.train {
+  background-color: #000000;
+  color: white;
+}
+
+.transport-type.ferry {
+  background-color: #00b1bf;
+  color: white;
+}
+
+.transport-label {
+  color: #6c757d;
+  font-size: 0.9em;
+}
+
+.selected-routes {
+  display: flex;
+  flex-wrap: wrap;
+  margin-top: 10px;
+  gap: 8px;
+}
+
+.selected-route-tag {
+  display: flex;
+  align-items: center;
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 20px;
+  padding: 3px 10px;
+  font-size: 0.9em;
+}
+
+.remove-route {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 0 0 0 5px;
+  color: #6c757d;
+}
+
+.remove-route:hover {
+  color: #dc3545;
+}
+
+.no-results {
+  padding: 15px 0;
+  text-align: center;
+  color: #6c757d;
+}

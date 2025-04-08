@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import BusMap from "./components/BusMap.jsx";
+import Dashboard from "./components/Dashboard.jsx";
 import "./App.css";
 import { parseRoutes } from "./utils/routeUtils.js";
 
@@ -11,8 +12,10 @@ function App() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [lastUpdate, setLastUpdate] = useState(null);
+  const [selectedRouteIds, setSelectedRouteIds] = useState([]);
   const routes = useMemo(() => parseRoutes(), []);
 
+  // Fetch all vehicles from the backend
   const fetchVehicleData = async () => {
     setError(null);
 
@@ -50,24 +53,33 @@ function App() {
     return () => clearInterval(intervalId);
   }, []);
 
+  // Filter vehicles on selected routes
+  const filteredVehicles = useMemo(() => {
+    if (selectedRouteIds.length === 0) {
+      return vehicles;
+    }
+
+    return vehicles.filter((vehicle) =>
+      selectedRouteIds.includes(vehicle.routeId)
+    );
+  }, [selectedRouteIds, vehicles]);
+
+  const handleRouteChange = (newSelectedIds) => {
+    setSelectedRouteIds(newSelectedIds);
+  };
+
   return (
     <div className="App">
-      <div className="status-overlay">
-        <h3>Auckland Live Bus Tracker</h3>
-        {isLoading && <p>Loading initial data...</p>}
-        {error && <p className="error-message">Error: {error}</p>}
-        {!isLoading && !error && (
-          <>
-            <p>
-              Displaying {vehicles.length} / {vehicles.length} buses. Last
-              update:{" "}
-              {lastUpdate ? new Date(lastUpdate).toLocaleTimeString() : "N/A"}
-            </p>
-          </>
-        )}
-      </div>
-
-      <BusMap vehicles={vehicles} />
+      <Dashboard
+        isLoading={isLoading}
+        error={error}
+        vehicles={vehicles}
+        lastUpdate={lastUpdate}
+        routes={routes}
+        selectedRouteIds={selectedRouteIds}
+        onRouteChange={handleRouteChange}
+      />
+      <BusMap vehicles={filteredVehicles} />
     </div>
   );
 }
