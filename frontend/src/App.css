@@ -5,6 +5,7 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  overflow: hidden;
 }
 
 code {
@@ -12,6 +13,18 @@ code {
     monospace;
 }
 
+.App {
+  height: 100vh;
+  width: 100vw;
+  position: relative;
+}
+
 .leaflet-marker-icon {
   transition: all 1s linear;
+}
+
+/* Make the map take up the full viewport */
+.leaflet-container {
+  width: 100%;
+  height: 100vh;
 }
