@@ -1,5 +1,11 @@
 import React from "react";
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import {
+  MapContainer,
+  TileLayer,
+  Marker,
+  Popup,
+  ZoomControl,
+} from "react-leaflet";
 import L from "leaflet";
 import busIconpng from "../assets/bus.png";
 import directionIconpng from "../assets/direction.png";
@@ -37,11 +43,13 @@ const BusMap = ({ vehicles }) => {
       bounds={bounds}
       maxBounds={bounds}
       maxBoundsViscosity={1}
+      zoomControl={false}
     >
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/">CARTO</a>'
         url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
       />
+      <ZoomControl position="bottomright" />
 
       {vehicles.map((vehicle) =>
         vehicle.latitude && vehicle.longitude && vehicle.routeId ? (
