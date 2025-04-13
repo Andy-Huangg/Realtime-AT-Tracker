@@ -6,6 +6,7 @@ const Sidebar = ({
   isLoading,
   error,
   vehicles,
+  filteredVehicles,
   lastUpdate,
   routes,
   selectedRouteIds,
@@ -42,15 +43,17 @@ const Sidebar = ({
         {error && <p className="error-message">Error: {error}</p>}
         {!isLoading && !error && (
           <>
+            {" "}
             <p>
-              Displaying {vehicles.length} buses. Last update:{" "}
+              Displaying {filteredVehicles.length} buses. Last update:{" "}
               {lastUpdate ? new Date(lastUpdate).toLocaleTimeString() : "N/A"}
-            </p>
+            </p>{" "}
             <div className="route-selection">
               <RouteSelector
                 routes={routes}
                 selectedRouteIds={selectedRouteIds}
                 onRouteChange={onRouteChange}
+                vehicles={vehicles}
               />
             </div>
           </>

@@ -1,10 +1,26 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
 import "./RouteSelector.css";
 
-const RouteSelector = ({ routes, selectedRouteIds, onRouteChange }) => {
+const RouteSelector = ({
+  routes,
+  selectedRouteIds,
+  onRouteChange,
+  vehicles = [],
+}) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const dropdownRef = useRef(null);
+
+  // Count vehicles for each route
+  const vehiclesPerRoute = useMemo(() => {
+    const counter = {};
+    vehicles.forEach((vehicle) => {
+      if (vehicle.routeId) {
+        counter[vehicle.routeId] = (counter[vehicle.routeId] || 0) + 1;
+      }
+    });
+    return counter;
+  }, [vehicles]);
 
   // Filter routes based on search term
   const filteredRoutes = routes.filter(
@@ -18,7 +34,6 @@ const RouteSelector = ({ routes, selectedRouteIds, onRouteChange }) => {
     selectedRouteIds.includes(route.route_id)
   );
 
-  // Handle checkbox change
   const handleCheckboxChange = (routeId) => {
     if (selectedRouteIds.includes(routeId)) {
       onRouteChange(selectedRouteIds.filter((id) => id !== routeId));
@@ -27,7 +42,6 @@ const RouteSelector = ({ routes, selectedRouteIds, onRouteChange }) => {
     }
   };
 
-  // Remove a selected route
   const removeSelected = (routeId) => {
     onRouteChange(selectedRouteIds.filter((id) => id !== routeId));
   };
@@ -66,19 +80,26 @@ const RouteSelector = ({ routes, selectedRouteIds, onRouteChange }) => {
             {filteredRoutes.map((route) => (
               <div key={route.route_id} className="route-option">
                 <label>
-                  <input
-                    type="checkbox"
-                    checked={selectedRouteIds.includes(route.route_id)}
-                    onChange={() => handleCheckboxChange(route.route_id)}
-                  />
-                  <span
-                    className={`transport-type ${route.transport_type.toLowerCase()}`}
-                  >
-                    {route.route_short_name}
-                  </span>
-                  <span className="transport-label">
-                    ({route.transport_type})
-                  </span>
+                  <div className="route-option-label">
+                    <div>
+                      <input
+                        type="checkbox"
+                        checked={selectedRouteIds.includes(route.route_id)}
+                        onChange={() => handleCheckboxChange(route.route_id)}
+                      />
+                      <span
+                        className={`transport-type ${route.transport_type.toLowerCase()}`}
+                      >
+                        {route.route_short_name}
+                      </span>
+                      <span className="transport-label">
+                        ({route.transport_type})
+                      </span>
+                    </div>
+                    <span className="vehicle-count">
+                      {vehiclesPerRoute[route.route_id] || 0} vehicles
+                    </span>
+                  </div>
                 </label>
               </div>
             ))}
@@ -97,6 +118,9 @@ const RouteSelector = ({ routes, selectedRouteIds, onRouteChange }) => {
                 className={`transport-type ${route.transport_type.toLowerCase()}`}
               >
                 {route.route_short_name}
+              </span>
+              <span className="selected-vehicle-count">
+                ({vehiclesPerRoute[route.route_id] || 0})
               </span>
               <button
                 className="remove-route"

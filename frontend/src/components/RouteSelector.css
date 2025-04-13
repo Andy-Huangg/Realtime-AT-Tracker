@@ -127,3 +127,11 @@
   text-align: center;
   color: #6c757d;
 }
+
+.route-option-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: rgb(0, 0, 0);
+  flex: auto;
+}

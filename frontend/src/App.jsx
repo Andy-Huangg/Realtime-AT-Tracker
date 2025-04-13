@@ -73,7 +73,8 @@ function App() {
       <Sidebar
         isLoading={isLoading}
         error={error}
-        vehicles={filteredVehicles}
+        vehicles={vehicles}
+        filteredVehicles={filteredVehicles}
         lastUpdate={lastUpdate}
         routes={routes}
         selectedRouteIds={selectedRouteIds}
