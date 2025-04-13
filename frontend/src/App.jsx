@@ -56,7 +56,7 @@ function App() {
   // Filter vehicles on selected routes
   const filteredVehicles = useMemo(() => {
     if (selectedRouteIds.length === 0) {
-      return vehicles;
+      return [];
     }
 
     return vehicles.filter((vehicle) =>
@@ -73,7 +73,7 @@ function App() {
       <Sidebar
         isLoading={isLoading}
         error={error}
-        vehicles={vehicles}
+        vehicles={filteredVehicles}
         lastUpdate={lastUpdate}
         routes={routes}
         selectedRouteIds={selectedRouteIds}
