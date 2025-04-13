@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import BusMap from "./components/BusMap.jsx";
-import Dashboard from "./components/Dashboard.jsx";
+import Sidebar from "./components/Sidebar.jsx";
 import "./App.css";
 import { parseRoutes } from "./utils/routeUtils.js";
 
@@ -70,7 +70,7 @@ function App() {
 
   return (
     <div className="App">
-      <Dashboard
+      <Sidebar
         isLoading={isLoading}
         error={error}
         vehicles={vehicles}
