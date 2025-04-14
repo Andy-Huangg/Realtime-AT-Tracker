@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import vehicleRouter from "./routes/vehicles.js";
+import routeRouter from "./routes/routes.js";
 
 dotenv.config();
 
@@ -16,6 +17,7 @@ app.get("/", (req, res) => {
 });
 
 app.use("/api/vehicles", vehicleRouter);
+app.use("/api/routes", routeRouter);
 
 app.use((err, req, res, next) => {
   console.error(err.stack);
