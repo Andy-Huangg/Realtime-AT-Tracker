@@ -80,7 +80,7 @@ function App() {
         selectedRouteIds={selectedRouteIds}
         onRouteChange={handleRouteChange}
       />
-      <BusMap vehicles={filteredVehicles} />
+      <BusMap vehicles={filteredVehicles} selectedRouteIds={selectedRouteIds} />
     </div>
   );
 }

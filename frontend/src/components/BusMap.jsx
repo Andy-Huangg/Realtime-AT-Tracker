@@ -1,10 +1,11 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   MapContainer,
   TileLayer,
   Marker,
   Popup,
   ZoomControl,
+  Polyline,
 } from "react-leaflet";
 import L from "leaflet";
 import busIconpng from "../assets/bus.png";
@@ -26,12 +27,57 @@ const directionIcon = new L.Icon({
   iconAnchor: [10, 30],
 });
 
-const BusMap = ({ vehicles }) => {
+const BusMap = ({ vehicles, selectedRouteIds = [] }) => {
   const mapCenter = [-36.8485, 174.7633]; // implement user location later.
   const bounds = [
     [-37.6, 173],
     [-36, 176],
   ];
+  const [routeShapes, setRouteShapes] = useState({});
+
+  // Fetch route shapes when selectedRouteIds changes
+  useEffect(() => {
+    const fetchRouteShapes = async () => {
+      if (!selectedRouteIds.length) {
+        setRouteShapes({});
+        return;
+      }
+
+      try {
+        const API_URL = import.meta.env.VITE_API_URL;
+        const response = await fetch(
+          `${API_URL}/api/routes?routeIds=${JSON.stringify(selectedRouteIds)}`
+        );
+
+        if (!response.ok) {
+          throw new Error(`Failed to fetch route shapes: ${response.status}`);
+        }
+
+        const data = await response.json();
+        setRouteShapes(data.shapes || {});
+      } catch (error) {
+        console.error("Error fetching route shapes:", error);
+      }
+    };
+
+    fetchRouteShapes();
+  }, [selectedRouteIds]);
+
+  // Generates a random color for each route
+  const getRouteColor = (routeId) => {
+    // Generate a deterministic color based on the routeId
+    const hash = routeId.split("").reduce((acc, char) => {
+      return char.charCodeAt(0) + ((acc << 5) - acc);
+    }, 0);
+
+    const r = (hash & 0xff0000) >> 16;
+    const g = (hash & 0x00ff00) >> 8;
+    const b = hash & 0x0000ff;
+
+    return `#${r.toString(16).padStart(2, "0")}${g
+      .toString(16)
+      .padStart(2, "0")}${b.toString(16).padStart(2, "0")}`;
+  };
 
   return (
     <MapContainer
@@ -50,7 +96,25 @@ const BusMap = ({ vehicles }) => {
         url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
       />
       <ZoomControl position="bottomright" />
-
+      {/* Render route outlines */}
+      {Object.entries(routeShapes).map(([routeId, shapes]) =>
+        shapes.map((shape, shapeIndex) =>
+          shape.points && shape.points.length > 0 ? (
+            <Polyline
+              key={`${routeId}-${shapeIndex}`}
+              positions={shape.points.map((point) => [point.lat, point.lng])}
+              color={getRouteColor(routeId)}
+              weight={4}
+              opacity={0.7}
+            >
+              <Popup>
+                <b>Route ID:</b> {routeId}
+              </Popup>
+            </Polyline>
+          ) : null
+        )
+      )}
+      {/* Render vehicle icons */}
       {vehicles.map((vehicle) =>
         vehicle.latitude && vehicle.longitude && vehicle.routeId ? (
           <React.Fragment key={vehicle.id}>
