@@ -7,25 +7,7 @@ import {
   ZoomControl,
   Polyline,
 } from "react-leaflet";
-import L from "leaflet";
-import busIconpng from "../assets/bus.png";
-import directionIconpng from "../assets/direction.png";
-
-import "leaflet-rotatedmarker";
-import RotatingBusMarker from "./RotatingBusMarker";
-
-const busIcon = new L.Icon({
-  iconUrl: busIconpng,
-  iconSize: [25, 25],
-  iconAnchor: [12, 25],
-  popupAnchor: [1, -34],
-});
-
-const directionIcon = new L.Icon({
-  iconUrl: directionIconpng,
-  iconSize: [20, 20],
-  iconAnchor: [10, 30],
-});
+import { createVehicleIcon, getRouteColor } from "../utils/routeUtils";
 
 const BusMap = ({ vehicles, selectedRouteIds = [] }) => {
   const mapCenter = [-36.8485, 174.7633]; // implement user location later.
@@ -63,22 +45,6 @@ const BusMap = ({ vehicles, selectedRouteIds = [] }) => {
     fetchRouteShapes();
   }, [selectedRouteIds]);
 
-  // Generates a random color for each route
-  const getRouteColor = (routeId) => {
-    // Generate a deterministic color based on the routeId
-    const hash = routeId.split("").reduce((acc, char) => {
-      return char.charCodeAt(0) + ((acc << 5) - acc);
-    }, 0);
-
-    const r = (hash & 0xff0000) >> 16;
-    const g = (hash & 0x00ff00) >> 8;
-    const b = hash & 0x0000ff;
-
-    return `#${r.toString(16).padStart(2, "0")}${g
-      .toString(16)
-      .padStart(2, "0")}${b.toString(16).padStart(2, "0")}`;
-  };
-
   return (
     <MapContainer
       center={mapCenter}
@@ -113,42 +79,35 @@ const BusMap = ({ vehicles, selectedRouteIds = [] }) => {
             </Polyline>
           ) : null
         )
-      )}
+      )}{" "}
       {/* Render vehicle icons */}
       {vehicles.map((vehicle) =>
         vehicle.latitude && vehicle.longitude && vehicle.routeId ? (
-          <React.Fragment key={vehicle.id}>
-            <Marker
-              position={[vehicle.latitude, vehicle.longitude]}
-              icon={busIcon}
-              zIndexOffset={1500}
-            >
-              <Popup>
-                <b>Vehicle ID:</b> {vehicle.vehicleId || "N/A"} <br />
-                <b>Route ID:</b> {vehicle.routeId || "N/A"} <br />
-                <b>Trip ID:</b> {vehicle.tripId || "N/A"} <br />
-                <b>Speed:</b>{" "}
-                {vehicle.speed ? `${vehicle.speed.toFixed(1)} km/h` : "N/A"}{" "}
-                <br />
-                <b>Bearing:</b>
-                {vehicle.bearing !== null && vehicle.bearing !== undefined
-                  ? `${vehicle.bearing.toFixed(0)}°`
-                  : "N/A"}{" "}
-                <br />
-                <b>Timestamp:</b>{" "}
-                {new Date(vehicle.timestamp).toLocaleTimeString()}
-              </Popup>
-            </Marker>
-            {vehicle.bearing !== null && vehicle.bearing !== undefined && (
-              <RotatingBusMarker
-                position={[vehicle.latitude, vehicle.longitude]}
-                icon={directionIcon}
-                rotationAngle={vehicle.bearing}
-                rotationOrigin="bottom center"
-                zIndexOffset={1400}
-              />
+          <Marker
+            key={vehicle.id} // Use vehicle.id as key
+            position={[vehicle.latitude, vehicle.longitude]}
+            icon={createVehicleIcon(
+              getRouteColor(vehicle.routeId),
+              vehicle.bearing
             )}
-          </React.Fragment>
+            zIndexOffset={1000} // Keep markers above polylines
+          >
+            <Popup>
+              <b>Vehicle ID:</b> {vehicle.vehicleId || "N/A"} <br />
+              <b>Route ID:</b> {vehicle.routeId || "N/A"} <br />
+              <b>Trip ID:</b> {vehicle.tripId || "N/A"} <br />
+              <b>Speed:</b>{" "}
+              {vehicle.speed ? `${vehicle.speed.toFixed(1)} km/h` : "N/A"}{" "}
+              <br />
+              <b>Bearing:</b>
+              {vehicle.bearing !== null && vehicle.bearing !== undefined
+                ? `${vehicle.bearing.toFixed(0)}°`
+                : "N/A"}{" "}
+              <br />
+              <b>Timestamp:</b>{" "}
+              {new Date(vehicle.timestamp).toLocaleTimeString()}
+            </Popup>
+          </Marker>
         ) : null
       )}
     </MapContainer>
