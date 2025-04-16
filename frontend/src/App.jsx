@@ -34,8 +34,10 @@ function App() {
       }
       const data = await response.json();
 
-      setVehicles(data.vehicles || []);
-      setLastUpdate(data.lastUpdate);
+      if (data.lastUpdate && data.lastUpdate !== lastUpdate) {
+        setVehicles(data.vehicles || []);
+        setLastUpdate(data.lastUpdate);
+      }
     } catch (error) {
       console.error("Failed to fetch vehicle data:", error);
       setError(error.message);
