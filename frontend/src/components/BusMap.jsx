@@ -9,13 +9,21 @@ import {
 } from "react-leaflet";
 import { createVehicleIcon, getRouteColor } from "../utils/routeUtils";
 
-const BusMap = ({ vehicles, selectedRouteIds = [] }) => {
+const BusMap = ({ vehicles, selectedRouteIds = [], routes }) => {
   const mapCenter = [-36.8485, 174.7633]; // implement user location later.
   const bounds = [
     [-37.6, 173],
     [-36, 176],
   ];
   const [routeShapes, setRouteShapes] = useState({});
+
+  const getVehicleTypeFromRoute = (routeId) => {
+    if (routes && routes.length > 0) {
+      const route = routes.find((route) => route.route_id === routeId);
+      return route ? route.transport_type : "BUS";
+    }
+    return "BUS";
+  };
 
   // Fetch route shapes when selectedRouteIds changes
   useEffect(() => {
@@ -88,7 +96,8 @@ const BusMap = ({ vehicles, selectedRouteIds = [] }) => {
             position={[vehicle.latitude, vehicle.longitude]}
             icon={createVehicleIcon(
               getRouteColor(vehicle.routeId),
-              vehicle.bearing
+              vehicle.bearing,
+              getVehicleTypeFromRoute(vehicle.routeId)
             )}
             zIndexOffset={1000} // Keep markers above polylines
           >
