@@ -12,8 +12,18 @@ function App() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [lastUpdate, setLastUpdate] = useState(null);
-  const [selectedRouteIds, setSelectedRouteIds] = useState([]);
   const routes = useMemo(() => parseRoutes(), []);
+
+  // Initialize with routes from local storage or empty array if not available
+  const [selectedRouteIds, setSelectedRouteIds] = useState(() => {
+    const saved = localStorage.getItem("selectedRoutes");
+    try {
+      return saved ? JSON.parse(saved) : [];
+    } catch (e) {
+      console.error("Failed to parse saved routes:", e);
+      return [];
+    }
+  });
 
   // Fetch all vehicles from the backend
   const fetchVehicleData = async () => {
@@ -47,13 +57,17 @@ function App() {
       }
     }
   };
-
   // Effect for initial fetch and interval
   useEffect(() => {
     fetchVehicleData();
     const intervalId = setInterval(fetchVehicleData, FETCH_INTERVAL);
     return () => clearInterval(intervalId);
   }, []);
+
+  // Save to local storage whenever selected routes change
+  useEffect(() => {
+    localStorage.setItem("selectedRoutes", JSON.stringify(selectedRouteIds));
+  }, [selectedRouteIds]);
 
   // Filter vehicles on selected routes
   const filteredVehicles = useMemo(() => {
