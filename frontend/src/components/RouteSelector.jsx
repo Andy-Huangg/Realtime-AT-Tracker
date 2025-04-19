@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect, useMemo } from "react";
 import "./RouteSelector.css";
+import { getRouteColor } from "../utils/routeUtils";
 
 const RouteSelector = ({
   routes,
@@ -82,13 +83,17 @@ const RouteSelector = ({
                 <label>
                   <div className="route-option-label">
                     <div>
+                      {" "}
                       <input
                         type="checkbox"
                         checked={selectedRouteIds.includes(route.route_id)}
                         onChange={() => handleCheckboxChange(route.route_id)}
                       />
                       <span
-                        className={`transport-type ${route.transport_type.toLowerCase()}`}
+                        className="transport-type"
+                        style={{
+                          backgroundColor: getRouteColor(route.route_id),
+                        }}
                       >
                         {route.route_short_name}
                       </span>
@@ -115,7 +120,8 @@ const RouteSelector = ({
           {selectedRoutes.map((route) => (
             <div key={route.route_id} className="selected-route-tag">
               <span
-                className={`transport-type ${route.transport_type.toLowerCase()}`}
+                className="transport-type"
+                style={{ backgroundColor: getRouteColor(route.route_id) }}
               >
                 {route.route_short_name}
               </span>
