@@ -115,7 +115,7 @@ const RouteSelector = ({
         </div>
       )}
 
-      {selectedRoutes.length > 0 && (
+      {selectedRoutes.length > 0 && !isOpen && (
         <div className="selected-routes">
           {selectedRoutes.map((route) => (
             <div key={route.route_id} className="selected-route-tag">

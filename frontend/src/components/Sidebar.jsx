@@ -32,14 +32,16 @@ const Sidebar = ({
       )}
 
       <div className={`sidebar ${isOpen ? "open" : "closed"}`}>
-        <button
-          className="sidebar-toggle-inside "
-          onClick={toggleSidebar}
-          aria-label="Toggle sidebar"
-        >
-          x
-        </button>{" "}
-        <h3>Auckland Live Bus Tracker</h3>
+        <div className="sidebar-header">
+          <button
+            className="sidebar-toggle-inside "
+            onClick={toggleSidebar}
+            aria-label="Toggle sidebar"
+          >
+            x
+          </button>{" "}
+          <h3>AT Live Bus Tracker</h3>
+        </div>
         {isLoading && <p>Loading initial data...</p>}
         {error && <p className="error-message">Error: {error}</p>}
         {!isLoading && !error && (

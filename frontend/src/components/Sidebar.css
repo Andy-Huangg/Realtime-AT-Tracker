@@ -6,10 +6,18 @@
   width: 320px;
   background-color: white;
   box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2);
-  padding: 20px;
+  padding: 0px 20px;
   z-index: 1000;
   overflow-y: auto;
   transition: transform 0.3s ease-in-out;
+}
+
+.sidebar-header {
+  display: flex;
+  align-items: center;
+
+  gap: 20px;
+  border-bottom: 1px solid #dee2e6;
 }
 
 .sidebar.closed {
