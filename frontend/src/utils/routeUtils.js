@@ -1,4 +1,5 @@
 import routesData from "../assets/gtfsdata/routes.txt?raw";
+import routeHeadsigns from "../assets/gtfsdata/route_headsigns.json";
 import L from "leaflet";
 const getTransportType = (routeType) => {
   switch (routeType) {
@@ -29,6 +30,7 @@ export const parseRoutes = () => {
         route_id,
         route_short_name,
         transport_type: getTransportType(route_type),
+        headsign: routeHeadsigns[route_id] || "",
       };
     })
     .filter((route) => route.route_id && route.route_short_name);
