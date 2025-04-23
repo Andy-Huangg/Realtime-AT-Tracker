@@ -27,7 +27,8 @@ const RouteSelector = ({
   const filteredRoutes = routes.filter(
     (route) =>
       route.route_short_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      route.transport_type.toLowerCase().includes(searchTerm.toLowerCase())
+      route.transport_type.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      route.headsign.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   // Find the selected routes objects for display
@@ -119,15 +120,21 @@ const RouteSelector = ({
         <div className="selected-routes">
           {selectedRoutes.map((route) => (
             <div key={route.route_id} className="selected-route-tag">
-              <span
-                className="transport-type"
-                style={{ backgroundColor: getRouteColor(route.route_id) }}
-              >
-                {route.route_short_name}
-              </span>
-              <span className="selected-vehicle-count">
-                ({vehiclesPerRoute[route.route_id] || 0})
-              </span>
+              <div className="selected-route-top">
+                <div className="selected-route-information">
+                  <span
+                    className="transport-type"
+                    style={{ backgroundColor: getRouteColor(route.route_id) }}
+                  >
+                    {route.route_short_name}
+                  </span>
+                  <span>({route.transport_type}) </span>
+                  <span className="selected-vehicle-count">
+                    {vehiclesPerRoute[route.route_id] || 0} Vehicles
+                  </span>
+                </div>
+                <p className="selected-route-headsign">{route.headsign}</p>
+              </div>
               <button
                 className="remove-route"
                 onClick={() => removeSelected(route.route_id)}
