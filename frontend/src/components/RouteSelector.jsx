@@ -81,7 +81,7 @@ const RouteSelector = ({
           <div className="route-options-list">
             {filteredRoutes.map((route) => (
               <div key={route.route_id} className="route-option">
-                <label>
+                <label className="route-option-label2">
                   <div className="route-option-label">
                     <div>
                       {" "}
@@ -106,6 +106,7 @@ const RouteSelector = ({
                       {vehiclesPerRoute[route.route_id] || 0} vehicles
                     </span>
                   </div>
+                  <span className="a">{route.headsign}</span>
                 </label>
               </div>
             ))}
@@ -117,32 +118,35 @@ const RouteSelector = ({
       )}
 
       {selectedRoutes.length > 0 && !isOpen && (
-        <div className="selected-routes">
-          {selectedRoutes.map((route) => (
-            <div key={route.route_id} className="selected-route-tag">
-              <div className="selected-route-top">
-                <div className="selected-route-information">
-                  <span
-                    className="transport-type"
-                    style={{ backgroundColor: getRouteColor(route.route_id) }}
-                  >
-                    {route.route_short_name}
-                  </span>
-                  <span>({route.transport_type}) </span>
-                  <span className="selected-vehicle-count">
-                    {vehiclesPerRoute[route.route_id] || 0} Vehicles
-                  </span>
+        <div className="">
+          <h3>Selected Routes:</h3>
+          <div className="selected-routes">
+            {selectedRoutes.map((route) => (
+              <div key={route.route_id} className="selected-route-tag">
+                <div className="selected-route-top">
+                  <div className="selected-route-information">
+                    <span
+                      className="transport-type"
+                      style={{ backgroundColor: getRouteColor(route.route_id) }}
+                    >
+                      {route.route_short_name}
+                    </span>
+                    <span>({route.transport_type}) </span>
+                    <span className="selected-vehicle-count">
+                      {vehiclesPerRoute[route.route_id] || 0} Vehicles
+                    </span>
+                  </div>
+                  <p className="selected-route-headsign">{route.headsign}</p>
                 </div>
-                <p className="selected-route-headsign">{route.headsign}</p>
+                <button
+                  className="remove-route"
+                  onClick={() => removeSelected(route.route_id)}
+                >
+                  ×
+                </button>
               </div>
-              <button
-                className="remove-route"
-                onClick={() => removeSelected(route.route_id)}
-              >
-                ×
-              </button>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       )}
     </div>
