@@ -103,7 +103,8 @@ const RouteSelector = ({
                       </span>
                     </div>
                     <span className="vehicle-count">
-                      {vehiclesPerRoute[route.route_id] || 0} vehicles
+                      {vehiclesPerRoute[route.route_id] || 0} vehicle
+                      {vehiclesPerRoute[route.route_id] != 1 ? "s" : ""}
                     </span>
                   </div>
                   <span className="a">{route.headsign}</span>
@@ -119,21 +120,26 @@ const RouteSelector = ({
 
       {selectedRoutes.length > 0 && !isOpen && (
         <div className="">
-          <h3>Selected Routes:</h3>
+          <h3 className="selected-routes-header">Selected Routes:</h3>
           <div className="selected-routes">
             {selectedRoutes.map((route) => (
               <div key={route.route_id} className="selected-route-tag">
                 <div className="selected-route-top">
                   <div className="selected-route-information">
-                    <span
-                      className="transport-type"
-                      style={{ backgroundColor: getRouteColor(route.route_id) }}
-                    >
-                      {route.route_short_name}
-                    </span>
-                    <span>({route.transport_type}) </span>
+                    <div className="selected-route-information-left">
+                      <span
+                        className="transport-type"
+                        style={{
+                          backgroundColor: getRouteColor(route.route_id),
+                        }}
+                      >
+                        {route.route_short_name}
+                      </span>
+                      <span>({route.transport_type}) </span>
+                    </div>
                     <span className="selected-vehicle-count">
-                      {vehiclesPerRoute[route.route_id] || 0} Vehicles
+                      {vehiclesPerRoute[route.route_id] || 0} Vehicle
+                      {vehiclesPerRoute[route.route_id] != 1 ? "s" : ""}
                     </span>
                   </div>
                   <p className="selected-route-headsign">{route.headsign}</p>

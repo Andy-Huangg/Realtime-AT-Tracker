@@ -96,7 +96,7 @@
 .selected-routes {
   display: flex;
   flex-direction: column;
-  margin-top: 10px;
+  margin-top: 5px;
 }
 
 .selected-route-tag {
@@ -107,6 +107,10 @@
   border: 1px solid #dee2e6;
   padding: 5px 10px;
   font-size: 0.9em;
+}
+
+.selected-routes-header {
+  margin-bottom: 0px;
 }
 
 .selected-route-top {
@@ -121,6 +125,12 @@
 
 .selected-route-headsign {
   margin: 10px 0px 5px 0px;
+}
+
+.selected-route-information {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
 }
 
 .remove-route {
