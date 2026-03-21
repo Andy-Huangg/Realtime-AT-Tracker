@@ -1,15 +1,18 @@
-import React, { useMemo, useState } from "react";
-import { CircleMarker, Popup, useMapEvents } from "react-leaflet";
+import React, { useMemo, useState, useEffect } from "react";
+import { CircleMarker, Popup, useMap, useMapEvents } from "react-leaflet";
 
 const MIN_ZOOM_FOR_STOPS = 12;
 
 const StopLayer = ({ routeStops, selectedStop, onStopSelect }) => {
-  const [currentZoom, setCurrentZoom] = useState(11);
+  const map = useMap();
+  const [currentZoom, setCurrentZoom] = useState(() => map.getZoom());
+
+  useEffect(() => {
+    setCurrentZoom(map.getZoom());
+  }, [map]);
 
   useMapEvents({
-    zoomend: (e) => {
-      setCurrentZoom(e.target.getZoom());
-    },
+    zoomend: (e) => setCurrentZoom(e.target.getZoom()),
   });
 
   const uniqueStops = useMemo(() => {

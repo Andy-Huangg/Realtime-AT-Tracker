@@ -12,29 +12,28 @@ const RouteSelector = ({
   const [searchTerm, setSearchTerm] = useState("");
   const dropdownRef = useRef(null);
 
-  // Count vehicles for each route
   const vehiclesPerRoute = useMemo(() => {
     const counter = {};
-    vehicles.forEach((vehicle) => {
-      if (vehicle.routeId) {
-        counter[vehicle.routeId] = (counter[vehicle.routeId] || 0) + 1;
-      }
+    vehicles.forEach((v) => {
+      if (v.routeId) counter[v.routeId] = (counter[v.routeId] || 0) + 1;
     });
     return counter;
   }, [vehicles]);
 
-  // Filter routes based on search term
-  const filteredRoutes = routes.filter(
-    (route) =>
-      route.route_short_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      route.transport_type.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      route.headsign.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredRoutes = useMemo(() =>
+    routes.filter(
+      (r) =>
+        r.route_short_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        r.transport_type.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        r.headsign.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        Object.values(r.directions || {}).some((d) =>
+          d.toLowerCase().includes(searchTerm.toLowerCase())
+        )
+    ),
+    [routes, searchTerm]
   );
 
-  // Find the selected routes objects for display
-  const selectedRoutes = routes.filter((route) =>
-    selectedRouteIds.includes(route.route_id)
-  );
+  const selectedRoutes = routes.filter((r) => selectedRouteIds.includes(r.route_id));
 
   const handleCheckboxChange = (routeId) => {
     if (selectedRouteIds.includes(routeId)) {
@@ -44,70 +43,110 @@ const RouteSelector = ({
     }
   };
 
-  const removeSelected = (routeId) => {
-    onRouteChange(selectedRouteIds.filter((id) => id !== routeId));
+  const handleSelectAll = () => {
+    const filteredIds = filteredRoutes.map((r) => r.route_id);
+    const merged = [...new Set([...selectedRouteIds, ...filteredIds])];
+    onRouteChange(merged);
   };
 
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setIsOpen(false);
-      }
-    };
+  const handleDeselectAll = () => {
+    const filteredIds = new Set(filteredRoutes.map((r) => r.route_id));
+    onRouteChange(selectedRouteIds.filter((id) => !filteredIds.has(id)));
+  };
 
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+  const allFilteredSelected =
+    filteredRoutes.length > 0 &&
+    filteredRoutes.every((r) => selectedRouteIds.includes(r.route_id));
+
+  useEffect(() => {
+    const handler = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target))
+        setIsOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
   }, []);
 
   return (
     <div className="route-selector-container" ref={dropdownRef}>
       <div className="route-selector-header" onClick={() => setIsOpen(!isOpen)}>
-        <span>Select routes</span>
+        <span>
+          {selectedRouteIds.length > 0
+            ? `${selectedRouteIds.length} route${selectedRouteIds.length !== 1 ? "s" : ""} selected`
+            : "Select routes"}
+        </span>
         <span className="dropdown-arrow">{isOpen ? "▲" : "▼"}</span>
       </div>
 
       {isOpen && (
         <div className="route-dropdown-container">
-          <input
-            type="text"
-            placeholder="Search routes..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            onClick={(e) => e.stopPropagation()}
-            className="route-search"
-          />
+          <div className="route-dropdown-toolbar">
+            <input
+              type="text"
+              placeholder="Search routes…"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              onClick={(e) => e.stopPropagation()}
+              className="route-search"
+            />
+            <div className="route-bulk-actions">
+              <button
+                className="bulk-btn"
+                onClick={handleSelectAll}
+                disabled={allFilteredSelected}
+                title={searchTerm ? "Select all matching" : "Select all"}
+              >
+                Select all{searchTerm ? " matching" : ""}
+              </button>
+              <button
+                className="bulk-btn bulk-btn-clear"
+                onClick={handleDeselectAll}
+                disabled={filteredRoutes.every((r) => !selectedRouteIds.includes(r.route_id))}
+                title={searchTerm ? "Deselect matching" : "Deselect all"}
+              >
+                {searchTerm ? "Deselect matching" : "Deselect all"}
+              </button>
+            </div>
+          </div>
 
           <div className="route-options-list">
             {filteredRoutes.map((route) => (
               <div key={route.route_id} className="route-option">
-                <label className="route-option-label2">
-                  <div className="route-option-label">
-                    <div>
-                      {" "}
-                      <input
-                        type="checkbox"
-                        checked={selectedRouteIds.includes(route.route_id)}
-                        onChange={() => handleCheckboxChange(route.route_id)}
-                      />
+                <label className="route-option-inner">
+                  <input
+                    type="checkbox"
+                    checked={selectedRouteIds.includes(route.route_id)}
+                    onChange={() => handleCheckboxChange(route.route_id)}
+                  />
+                  <div className="route-option-body">
+                    <div className="route-option-top">
                       <span
                         className="transport-type"
-                        style={{
-                          backgroundColor: getRouteColor(route.route_id),
-                        }}
+                        style={{ backgroundColor: getRouteColor(route.route_id) }}
                       >
                         {route.route_short_name}
                       </span>
-                      <span className="transport-label">
-                        ({route.transport_type})
+                      <span className="transport-label">({route.transport_type})</span>
+                      <span className="vehicle-count">
+                        {vehiclesPerRoute[route.route_id] || 0} vehicle
+                        {vehiclesPerRoute[route.route_id] !== 1 ? "s" : ""}
                       </span>
                     </div>
-                    <span className="vehicle-count">
-                      {vehiclesPerRoute[route.route_id] || 0} vehicle
-                      {vehiclesPerRoute[route.route_id] != 1 ? "s" : ""}
-                    </span>
+                    <div className="route-directions">
+                      {route.directions?.["0"] && (
+                        <span className="route-dir">
+                          <span className="route-dir-arrow">→</span>
+                          {route.directions["0"]}
+                        </span>
+                      )}
+                      {route.directions?.["1"] && (
+                        <span className="route-dir">
+                          <span className="route-dir-arrow">←</span>
+                          {route.directions["1"]}
+                        </span>
+                      )}
+                    </div>
                   </div>
-                  <span className="a">{route.headsign}</span>
                 </label>
               </div>
             ))}
@@ -119,8 +158,16 @@ const RouteSelector = ({
       )}
 
       {selectedRoutes.length > 0 && !isOpen && (
-        <div className="">
-          <h3 className="selected-routes-header">Selected Routes:</h3>
+        <div>
+          <div className="selected-routes-header-row">
+            <h3 className="selected-routes-header">Selected Routes</h3>
+            <button
+              className="deselect-all-btn"
+              onClick={() => onRouteChange([])}
+            >
+              Clear all
+            </button>
+          </div>
           <div className="selected-routes">
             {selectedRoutes.map((route) => (
               <div key={route.route_id} className="selected-route-tag">
@@ -129,24 +176,35 @@ const RouteSelector = ({
                     <div className="selected-route-information-left">
                       <span
                         className="transport-type"
-                        style={{
-                          backgroundColor: getRouteColor(route.route_id),
-                        }}
+                        style={{ backgroundColor: getRouteColor(route.route_id) }}
                       >
                         {route.route_short_name}
                       </span>
-                      <span>({route.transport_type}) </span>
+                      <span className="transport-label">({route.transport_type})</span>
                     </div>
                     <span className="selected-vehicle-count">
-                      {vehiclesPerRoute[route.route_id] || 0} Vehicle
-                      {vehiclesPerRoute[route.route_id] != 1 ? "s" : ""}
+                      {vehiclesPerRoute[route.route_id] || 0} vehicle
+                      {vehiclesPerRoute[route.route_id] !== 1 ? "s" : ""}
                     </span>
                   </div>
-                  <p className="selected-route-headsign">{route.headsign}</p>
+                  <div className="selected-route-directions">
+                    {route.directions?.["0"] && (
+                      <span className="route-dir small">
+                        <span className="route-dir-arrow">→</span>
+                        {route.directions["0"]}
+                      </span>
+                    )}
+                    {route.directions?.["1"] && (
+                      <span className="route-dir small">
+                        <span className="route-dir-arrow">←</span>
+                        {route.directions["1"]}
+                      </span>
+                    )}
+                  </div>
                 </div>
                 <button
                   className="remove-route"
-                  onClick={() => removeSelected(route.route_id)}
+                  onClick={() => onRouteChange(selectedRouteIds.filter((id) => id !== route.route_id))}
                 >
                   ×
                 </button>

@@ -1,94 +1,16 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import {
   MapContainer,
   TileLayer,
+  Marker,
+  Popup,
   ZoomControl,
   Polyline,
-  Popup,
   useMap,
 } from "react-leaflet";
-import L from "leaflet";
-import "leaflet.markercluster";
-import "leaflet.markercluster/dist/MarkerCluster.css";
-import "leaflet.markercluster/dist/MarkerCluster.Default.css";
-import { createVehicleIcon, getRouteColor, createClusterIcon } from "../utils/routeUtils";
+import { createVehicleIcon, getRouteColor } from "../utils/routeUtils";
 import { MAP_STYLES, DEFAULT_STYLE_ID } from "../utils/mapStyles";
 import StopLayer from "./StopLayer";
-
-const ClusterLayer = ({ vehicles, routes }) => {
-  const map = useMap();
-  const clusterGroupRef = useRef(null);
-
-  const getVehicleType = (routeId) => {
-    const route = routes?.find((r) => r.route_id === routeId);
-    return route?.transport_type || "BUS";
-  };
-
-  useEffect(() => {
-    if (!clusterGroupRef.current) {
-      clusterGroupRef.current = L.markerClusterGroup({
-        chunkedLoading: true,
-        maxClusterRadius: 60,
-        iconCreateFunction: createClusterIcon,
-        spiderfyOnMaxZoom: true,
-        showCoverageOnHover: false,
-        zoomToBoundsOnClick: true,
-      });
-      map.addLayer(clusterGroupRef.current);
-    }
-
-    const group = clusterGroupRef.current;
-    group.clearLayers();
-
-    vehicles.forEach((v) => {
-      if (!v.latitude || !v.longitude || !v.routeId) return;
-
-      const color = getRouteColor(v.routeId);
-      const icon = createVehicleIcon(color, v.bearing, getVehicleType(v.routeId));
-      const marker = L.marker([v.latitude, v.longitude], { icon, zIndexOffset: 1000 });
-
-      // Styled popup HTML
-      marker.bindPopup(`
-        <div class="vehicle-popup-route" style="background:${color}">
-          Route ${v.routeId || "N/A"}
-        </div>
-        <div class="vehicle-popup-body">
-          <div class="vehicle-popup-row">
-            <span class="vehicle-popup-label">Vehicle</span>
-            <span class="vehicle-popup-value">${v.vehicleId || "—"}</span>
-          </div>
-          <div class="vehicle-popup-row">
-            <span class="vehicle-popup-label">Speed</span>
-            <span class="vehicle-popup-value">${v.speed != null ? v.speed.toFixed(1) + " km/h" : "—"}</span>
-          </div>
-          <div class="vehicle-popup-row">
-            <span class="vehicle-popup-label">Bearing</span>
-            <span class="vehicle-popup-value">${v.bearing != null ? v.bearing.toFixed(0) + "°" : "—"}</span>
-          </div>
-          <div class="vehicle-popup-row">
-            <span class="vehicle-popup-label">Updated</span>
-            <span class="vehicle-popup-value">${new Date(v.timestamp).toLocaleTimeString()}</span>
-          </div>
-        </div>
-      `, { maxWidth: 220 });
-
-      group.addLayer(marker);
-    });
-
-    return () => group.clearLayers();
-  }, [vehicles, map, routes]);
-
-  useEffect(() => {
-    return () => {
-      if (clusterGroupRef.current) {
-        map.removeLayer(clusterGroupRef.current);
-        clusterGroupRef.current = null;
-      }
-    };
-  }, [map]);
-
-  return null;
-};
 
 const BusMap = ({
   vehicles,
@@ -104,6 +26,11 @@ const BusMap = ({
   const [routeShapes, setRouteShapes] = useState({});
 
   const activeTile = tileConfig || MAP_STYLES[DEFAULT_STYLE_ID];
+
+  const getVehicleType = (routeId) => {
+    const route = routes?.find((r) => r.route_id === routeId);
+    return route?.transport_type || "BUS";
+  };
 
   useEffect(() => {
     if (!selectedRouteIds.length) { setRouteShapes({}); return; }
@@ -134,6 +61,7 @@ const BusMap = ({
       />
       <ZoomControl position="bottomright" />
 
+      {/* Route polylines */}
       {Object.entries(routeShapes).map(([routeId, shapes]) =>
         shapes.map((shape, i) =>
           shape.points?.length > 0 ? (
@@ -154,8 +82,46 @@ const BusMap = ({
         )
       )}
 
+      {/* Stop markers */}
       <StopLayer routeStops={routeStops} selectedStop={selectedStop} onStopSelect={onStopSelect} />
-      <ClusterLayer vehicles={vehicles} routes={routes} />
+
+      {/* Vehicle markers — individual, no clustering */}
+      {vehicles.map((v) => {
+        if (!v.latitude || !v.longitude || !v.routeId) return null;
+        const color = getRouteColor(v.routeId);
+        return (
+          <Marker
+            key={v.id}
+            position={[v.latitude, v.longitude]}
+            icon={createVehicleIcon(color, v.bearing, getVehicleType(v.routeId))}
+            zIndexOffset={1000}
+          >
+            <Popup maxWidth={220}>
+              <div className="vehicle-popup-route" style={{ background: color }}>
+                Route {v.routeId}
+              </div>
+              <div className="vehicle-popup-body">
+                <div className="vehicle-popup-row">
+                  <span className="vehicle-popup-label">Vehicle</span>
+                  <span className="vehicle-popup-value">{v.vehicleId || "—"}</span>
+                </div>
+                <div className="vehicle-popup-row">
+                  <span className="vehicle-popup-label">Speed</span>
+                  <span className="vehicle-popup-value">{v.speed != null ? v.speed.toFixed(1) + " km/h" : "—"}</span>
+                </div>
+                <div className="vehicle-popup-row">
+                  <span className="vehicle-popup-label">Bearing</span>
+                  <span className="vehicle-popup-value">{v.bearing != null ? v.bearing.toFixed(0) + "°" : "—"}</span>
+                </div>
+                <div className="vehicle-popup-row">
+                  <span className="vehicle-popup-label">Updated</span>
+                  <span className="vehicle-popup-value">{new Date(v.timestamp).toLocaleTimeString()}</span>
+                </div>
+              </div>
+            </Popup>
+          </Marker>
+        );
+      })}
     </MapContainer>
   );
 };

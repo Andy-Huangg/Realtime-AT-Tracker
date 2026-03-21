@@ -33,14 +33,18 @@ const Sidebar = ({
 
   const TABS = [
     { id: "routes", label: "Routes" },
-    { id: "info",   label: "Info" },
-    { id: "stats",  label: "Stats" },
+    { id: "info", label: "Info" },
+    { id: "stats", label: "Stats" },
   ];
 
   return (
     <>
       {!isOpen && (
-        <button className="sidebar-toggle" onClick={() => setIsOpen(true)} aria-label="Open sidebar">
+        <button
+          className="sidebar-toggle"
+          onClick={() => setIsOpen(true)}
+          aria-label="Open sidebar"
+        >
           <svg width="18" height="14" viewBox="0 0 18 14" fill="none">
             <rect width="18" height="2" rx="1" fill="currentColor" />
             <rect y="6" width="12" height="2" rx="1" fill="currentColor" />
@@ -63,7 +67,12 @@ const Sidebar = ({
           </div>
           <button className="sidebar-close" onClick={() => setIsOpen(false)}>
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-              <path d="M1 1L13 13M13 1L1 13" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
+              <path
+                d="M1 1L13 13M13 1L1 13"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+              />
             </svg>
           </button>
         </div>
@@ -100,9 +109,13 @@ const Sidebar = ({
                   <ConnectionDot status={connectionStatus} />
                   <div>
                     <div className="info-connection-status">
-                      {connectionStatus === "connected" ? "Live feed active" :
-                       connectionStatus === "disconnected" ? "Disconnected" :
-                       connectionStatus === "error" ? "Connection error" : "Connecting…"}
+                      {connectionStatus === "connected"
+                        ? "Live feed active"
+                        : connectionStatus === "disconnected"
+                          ? "Disconnected"
+                          : connectionStatus === "error"
+                            ? "Connection error"
+                            : "Connecting…"}
                     </div>
                     {lastUpdate && (
                       <div className="info-connection-time">
@@ -141,38 +154,31 @@ const Sidebar = ({
                 <div className="info-summary-rows">
                   <div className="info-summary-row">
                     <span className="info-summary-label">Routes selected</span>
-                    <span className="info-summary-value">{selectedRouteIds.length}</span>
+                    <span className="info-summary-value">
+                      {selectedRouteIds.length}
+                    </span>
                   </div>
                   <div className="info-summary-row">
                     <span className="info-summary-label">Vehicles on map</span>
-                    <span className="info-summary-value accent">{filteredVehicles.length}</span>
+                    <span className="info-summary-value accent">
+                      {filteredVehicles.length}
+                    </span>
                   </div>
                   <div className="info-summary-row">
                     <span className="info-summary-label">Total vehicles</span>
-                    <span className="info-summary-value">{vehicles.length}</span>
+                    <span className="info-summary-value">
+                      {vehicles.length}
+                    </span>
                   </div>
                   <div className="info-summary-row">
                     <span className="info-summary-label">Stops loaded</span>
                     <span className="info-summary-value">
-                      {Object.values(routeStops).reduce((s, arr) => s + (arr?.length || 0), 0)}
+                      {Object.values(routeStops).reduce(
+                        (s, arr) => s + (arr?.length || 0),
+                        0,
+                      )}
                     </span>
                   </div>
-                </div>
-              </div>
-
-              {/* Tips */}
-              <div className="info-tips">
-                <div className="info-tip">
-                  <span className="info-tip-icon">⚡</span>
-                  <span>Positions refresh every ~29 s via WebSocket</span>
-                </div>
-                <div className="info-tip">
-                  <span className="info-tip-icon">🔍</span>
-                  <span>Zoom to 12× or beyond to reveal bus stops</span>
-                </div>
-                <div className="info-tip">
-                  <span className="info-tip-icon">📍</span>
-                  <span>Click a stop marker to see approaching vehicles</span>
                 </div>
               </div>
             </div>
@@ -197,7 +203,9 @@ const Sidebar = ({
         onClose={() => onStopSelect(null)}
       />
 
-      {isOpen && <div className="sidebar-backdrop" onClick={() => setIsOpen(false)} />}
+      {isOpen && (
+        <div className="sidebar-backdrop" onClick={() => setIsOpen(false)} />
+      )}
     </>
   );
 };
