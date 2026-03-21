@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   MapContainer,
   TileLayer,
@@ -24,6 +24,7 @@ const BusMap = ({
   const mapCenter = [-36.8485, 174.7633];
   const bounds = [[-37.6, 173], [-36, 176]];
   const [routeShapes, setRouteShapes] = useState({});
+  const shapeCacheRef = useRef({});
 
   const activeTile = tileConfig || MAP_STYLES[DEFAULT_STYLE_ID];
 
@@ -34,10 +35,26 @@ const BusMap = ({
 
   useEffect(() => {
     if (!selectedRouteIds.length) { setRouteShapes({}); return; }
+
+    const missing = selectedRouteIds.filter((id) => !shapeCacheRef.current[id]);
+
+    const applySelection = () => {
+      const visible = {};
+      selectedRouteIds.forEach((id) => {
+        if (shapeCacheRef.current[id]) visible[id] = shapeCacheRef.current[id];
+      });
+      setRouteShapes(visible);
+    };
+
+    if (!missing.length) { applySelection(); return; }
+
     const API_URL = import.meta.env.VITE_API_URL;
-    fetch(`${API_URL}/api/routes?routeIds=${JSON.stringify(selectedRouteIds)}`)
+    fetch(`${API_URL}/api/routes?routeIds=${JSON.stringify(missing)}`)
       .then((r) => r.json())
-      .then((d) => setRouteShapes(d.shapes || {}))
+      .then((d) => {
+        Object.assign(shapeCacheRef.current, d.shapes || {});
+        applySelection();
+      })
       .catch((e) => console.error("Error fetching route shapes:", e));
   }, [selectedRouteIds]);
 

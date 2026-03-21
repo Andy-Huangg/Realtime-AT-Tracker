@@ -2,6 +2,7 @@ import axios from "axios";
 import GtfsRealtimeBindings from "gtfs-realtime-bindings";
 import dotenv from "dotenv";
 import { EventEmitter } from "events";
+import { getTripHeadsign } from "./routeService.js";
 
 dotenv.config();
 
@@ -50,11 +51,13 @@ class AtService extends EventEmitter {
           .filter((entity) => entity.vehicle && entity.vehicle.position)
           .map((entity) => {
             const { vehicle } = entity;
+            const tripId = vehicle.trip?.tripId || null;
             return {
               id: entity.id,
               vehicleId: vehicle.vehicle?.id || null,
-              tripId: vehicle.trip?.tripId || null,
+              tripId,
               routeId: vehicle.trip?.routeId || null,
+              headsign: getTripHeadsign(tripId),
               latitude: vehicle.position.latitude,
               longitude: vehicle.position.longitude,
               bearing: vehicle.position.bearing,

@@ -70,7 +70,7 @@ const StopInfoPanel = ({ selectedStop, routeStops, filteredVehicles, onClose }) 
 
                 return (
                   <div key={v.id} className={`stop-departure ${i === 0 ? "first" : ""}`}>
-                    {/* Route badge */}
+                    {/* Route badge + headsign */}
                     <div className="departure-route">
                       <span
                         className="departure-badge"
@@ -78,6 +78,11 @@ const StopInfoPanel = ({ selectedStop, routeStops, filteredVehicles, onClose }) 
                       >
                         {v.routeId}
                       </span>
+                      {v.headsign && (
+                        <span className="departure-headsign" title={v.headsign}>
+                          → {v.headsign}
+                        </span>
+                      )}
                     </div>
 
                     {/* Distance with mini progress bar */}

@@ -119,7 +119,7 @@
 .stop-departure {
   display: grid;
   grid-template-columns: 80px 1fr 90px;
-  align-items: center;
+  align-items: start;
   padding: 10px 16px;
   border-bottom: 1px solid var(--border-subtle);
   gap: 8px;
@@ -134,7 +134,10 @@
 /* Route badge */
 .departure-route {
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  min-width: 0;
 }
 
 .departure-badge {
@@ -148,6 +151,18 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.departure-headsign {
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 72px;
+  line-height: 1.2;
 }
 
 /* Distance */
@@ -155,6 +170,7 @@
   display: flex;
   flex-direction: column;
   gap: 3px;
+  padding-top: 2px;
 }
 
 .departure-dist-val {
@@ -183,6 +199,7 @@
 .departure-eta {
   display: flex;
   justify-content: flex-end;
+  padding-top: 2px;
 }
 
 .eta-badge {

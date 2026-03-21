@@ -8,6 +8,7 @@ import routeRouter from "./routes/routes.js";
 import stopsRouter from "./routes/stops.js";
 import atService from "./services/atService.js";
 import { warmUpCache } from "./services/stopsService.js";
+import { preloadRouteShapes } from "./services/routeService.js";
 
 dotenv.config();
 
@@ -41,6 +42,7 @@ atService.on("vehicleUpdate", (payload) => {
 
 atService.start();
 warmUpCache();
+preloadRouteShapes();
 
 httpServer.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
