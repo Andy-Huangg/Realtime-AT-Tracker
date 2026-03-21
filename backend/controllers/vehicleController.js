@@ -1,8 +1,8 @@
-import { getLatestBusData } from "../services/atService.js";
+import atService from "../services/atService.js";
 
 export const getLiveVehiclePositions = (req, res) => {
   try {
-    const data = getLatestBusData();
+    const data = atService.getLatestBusData();
     if (!data.lastUpdate) {
       return res.status(503).json({
         message:
