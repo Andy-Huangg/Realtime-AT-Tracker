@@ -1,0 +1,216 @@
+/* ── Panel shell ── */
+.stop-panel {
+  position: fixed;
+  bottom: 50px;
+  right: 16px;
+  width: 320px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: var(--shadow-overlay);
+  z-index: 1500;
+  overflow: hidden;
+  transform: translateY(16px) scale(0.98);
+  opacity: 0;
+  pointer-events: none;
+  transition: transform var(--transition-slide), opacity var(--transition-normal);
+}
+
+.stop-panel.visible {
+  transform: translateY(0) scale(1);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* ── Header ── */
+.stop-panel-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 14px 16px;
+  background: var(--accent);
+  gap: 10px;
+}
+
+.stop-panel-header-left {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  min-width: 0;
+}
+
+.stop-panel-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.9);
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  flex-shrink: 0;
+  margin-top: 3px;
+}
+
+.stop-panel-name {
+  font-family: var(--font-display);
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  color: #ffffff;
+  line-height: 1.2;
+}
+
+.stop-panel-id {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.72);
+  margin-top: 2px;
+}
+
+.stop-panel-close {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  border-radius: 6px;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: white;
+  flex-shrink: 0;
+  transition: background var(--transition-fast);
+}
+
+.stop-panel-close:hover { background: rgba(255, 255, 255, 0.35); }
+
+/* ── Column headings ── */
+.stop-panel-cols {
+  display: grid;
+  grid-template-columns: 80px 1fr 90px;
+  padding: 6px 16px;
+  background: var(--bg-elevated);
+  border-bottom: 1px solid var(--border-subtle);
+  gap: 8px;
+}
+
+.stop-panel-cols span {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+/* ── Body ── */
+.stop-panel-body {
+  max-height: 260px;
+  overflow-y: auto;
+}
+
+.stop-panel-empty {
+  padding: 20px 16px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+/* ── Departure row ── */
+.stop-departure {
+  display: grid;
+  grid-template-columns: 80px 1fr 90px;
+  align-items: center;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border-subtle);
+  gap: 8px;
+  transition: background var(--transition-fast);
+}
+
+.stop-departure:last-child { border-bottom: none; }
+.stop-departure:hover { background: var(--bg-elevated); }
+
+.stop-departure.first { background: rgba(0, 177, 191, 0.04); }
+
+/* Route badge */
+.departure-route {
+  display: flex;
+  align-items: center;
+}
+
+.departure-badge {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  color: white;
+  padding: 3px 8px;
+  border-radius: 5px;
+  max-width: 72px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Distance */
+.departure-dist {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.departure-dist-val {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.departure-dist-bar {
+  height: 3px;
+  background: var(--border-subtle);
+  border-radius: 2px;
+  overflow: hidden;
+  width: 100%;
+}
+
+.departure-dist-fill {
+  height: 100%;
+  border-radius: 2px;
+  opacity: 0.6;
+  transition: width var(--transition-normal);
+}
+
+/* ETA */
+.departure-eta {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.eta-badge {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  padding: 3px 7px;
+  border-radius: 5px;
+  white-space: nowrap;
+}
+
+.eta-soon {
+  background: rgba(29, 122, 58, 0.1);
+  color: var(--success);
+}
+
+.eta-near {
+  background: rgba(181, 104, 0, 0.1);
+  color: var(--warning);
+}
+
+.eta-far {
+  background: var(--bg-elevated);
+  color: var(--text-secondary);
+}
+
+.eta-stopped {
+  background: var(--bg-elevated);
+  color: var(--text-muted);
+  font-weight: 500;
+}

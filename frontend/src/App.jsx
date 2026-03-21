@@ -1,105 +1,77 @@
 import React, { useState, useEffect, useMemo } from "react";
 import BusMap from "./components/BusMap.jsx";
 import Sidebar from "./components/Sidebar.jsx";
+import MapStyleSelector from "./components/MapStyleSelector.jsx";
 import "./App.css";
 import { parseRoutes } from "./utils/routeUtils.js";
+import { useSocket } from "./hooks/useSocket.js";
+import { MAP_STYLES, DEFAULT_STYLE_ID } from "./utils/mapStyles.js";
 
 const API_URL = import.meta.env.VITE_API_URL;
-const FETCH_INTERVAL = 30000;
 
 function App() {
-  const [vehicles, setVehicles] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [lastUpdate, setLastUpdate] = useState(null);
   const routes = useMemo(() => parseRoutes(), []);
+  const { vehicles, lastUpdate, connectionStatus } = useSocket(API_URL);
 
-  // Initialize with routes from local storage or empty array if not available
   const [selectedRouteIds, setSelectedRouteIds] = useState(() => {
     const saved = localStorage.getItem("selectedRoutes");
     try {
       return saved ? JSON.parse(saved) : [];
     } catch (e) {
-      console.error("Failed to parse saved routes:", e);
       return [];
     }
   });
 
-  // Fetch all vehicles from the backend
-  const fetchVehicleData = async () => {
-    setError(null);
+  const [selectedStop, setSelectedStop] = useState(null);
+  const [routeStops, setRouteStops] = useState({});
+  const [mapStyleId, setMapStyleId] = useState(DEFAULT_STYLE_ID);
 
-    try {
-      const response = await fetch(`${API_URL}/api/vehicles`);
-
-      if (!response.ok) {
-        let errorMsg = `HTTP error! Status: ${response.status}`;
-        try {
-          const errorData = await response.json();
-          errorMsg = errorData.message || errorMsg;
-        } catch (e) {
-          // Intentionally left empty to ignore JSON parsing errors
-        }
-        throw new Error(errorMsg);
-      }
-      const data = await response.json();
-
-      if (data.lastUpdate && data.lastUpdate !== lastUpdate) {
-        setVehicles(data.vehicles || []);
-        setLastUpdate(data.lastUpdate);
-      }
-    } catch (error) {
-      console.error("Failed to fetch vehicle data:", error);
-      setError(error.message);
-    } finally {
-      if (isLoading) {
-        setIsLoading(false);
-      }
-    }
-  };
-  // Effect for initial fetch and interval
-  useEffect(() => {
-    fetchVehicleData();
-    const intervalId = setInterval(fetchVehicleData, FETCH_INTERVAL);
-    return () => clearInterval(intervalId);
-  }, []);
-
-  // Save to local storage whenever selected routes change
   useEffect(() => {
     localStorage.setItem("selectedRoutes", JSON.stringify(selectedRouteIds));
   }, [selectedRouteIds]);
 
-  // Filter vehicles on selected routes
-  const filteredVehicles = useMemo(() => {
+  useEffect(() => {
     if (selectedRouteIds.length === 0) {
-      return [];
+      setRouteStops({});
+      return;
     }
+    fetch(`${API_URL}/api/stops?routeIds=${JSON.stringify(selectedRouteIds)}`)
+      .then((r) => r.json())
+      .then((d) => setRouteStops(d.stops || {}))
+      .catch((err) => console.error("Failed to fetch stops:", err));
+  }, [selectedRouteIds]);
 
-    return vehicles.filter((vehicle) =>
-      selectedRouteIds.includes(vehicle.routeId)
-    );
+  const filteredVehicles = useMemo(() => {
+    if (selectedRouteIds.length === 0) return [];
+    return vehicles.filter((v) => selectedRouteIds.includes(v.routeId));
   }, [selectedRouteIds, vehicles]);
-
-  const handleRouteChange = (newSelectedIds) => {
-    setSelectedRouteIds(newSelectedIds);
-  };
 
   return (
     <div className="App">
       <Sidebar
-        isLoading={isLoading}
-        error={error}
         vehicles={vehicles}
         filteredVehicles={filteredVehicles}
         lastUpdate={lastUpdate}
+        connectionStatus={connectionStatus}
         routes={routes}
         selectedRouteIds={selectedRouteIds}
-        onRouteChange={handleRouteChange}
+        onRouteChange={setSelectedRouteIds}
+        selectedStop={selectedStop}
+        onStopSelect={setSelectedStop}
+        routeStops={routeStops}
       />
       <BusMap
         vehicles={filteredVehicles}
         selectedRouteIds={selectedRouteIds}
         routes={routes}
+        routeStops={routeStops}
+        selectedStop={selectedStop}
+        onStopSelect={setSelectedStop}
+        tileConfig={MAP_STYLES[mapStyleId]}
+      />
+      <MapStyleSelector
+        currentStyleId={mapStyleId}
+        onStyleChange={setMapStyleId}
       />
     </div>
   );

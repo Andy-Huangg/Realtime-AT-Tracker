@@ -1,124 +1,161 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   MapContainer,
   TileLayer,
-  Marker,
-  Popup,
   ZoomControl,
   Polyline,
+  Popup,
+  useMap,
 } from "react-leaflet";
-import { createVehicleIcon, getRouteColor } from "../utils/routeUtils";
+import L from "leaflet";
+import "leaflet.markercluster";
+import "leaflet.markercluster/dist/MarkerCluster.css";
+import "leaflet.markercluster/dist/MarkerCluster.Default.css";
+import { createVehicleIcon, getRouteColor, createClusterIcon } from "../utils/routeUtils";
+import { MAP_STYLES, DEFAULT_STYLE_ID } from "../utils/mapStyles";
+import StopLayer from "./StopLayer";
 
-const BusMap = ({ vehicles, selectedRouteIds = [], routes }) => {
-  const mapCenter = [-36.8485, 174.7633]; // implement user location later.
-  const bounds = [
-    [-37.6, 173],
-    [-36, 176],
-  ];
-  const [routeShapes, setRouteShapes] = useState({});
+const ClusterLayer = ({ vehicles, routes }) => {
+  const map = useMap();
+  const clusterGroupRef = useRef(null);
 
-  const getVehicleTypeFromRoute = (routeId) => {
-    if (routes && routes.length > 0) {
-      const route = routes.find((route) => route.route_id === routeId);
-      return route ? route.transport_type : "BUS";
-    }
-    return "BUS";
+  const getVehicleType = (routeId) => {
+    const route = routes?.find((r) => r.route_id === routeId);
+    return route?.transport_type || "BUS";
   };
 
-  // Fetch route shapes when selectedRouteIds changes
   useEffect(() => {
-    const fetchRouteShapes = async () => {
-      if (!selectedRouteIds.length) {
-        setRouteShapes({});
-        return;
-      }
+    if (!clusterGroupRef.current) {
+      clusterGroupRef.current = L.markerClusterGroup({
+        chunkedLoading: true,
+        maxClusterRadius: 60,
+        iconCreateFunction: createClusterIcon,
+        spiderfyOnMaxZoom: true,
+        showCoverageOnHover: false,
+        zoomToBoundsOnClick: true,
+      });
+      map.addLayer(clusterGroupRef.current);
+    }
 
-      try {
-        const API_URL = import.meta.env.VITE_API_URL;
-        const response = await fetch(
-          `${API_URL}/api/routes?routeIds=${JSON.stringify(selectedRouteIds)}`
-        );
+    const group = clusterGroupRef.current;
+    group.clearLayers();
 
-        if (!response.ok) {
-          throw new Error(`Failed to fetch route shapes: ${response.status}`);
-        }
+    vehicles.forEach((v) => {
+      if (!v.latitude || !v.longitude || !v.routeId) return;
 
-        const data = await response.json();
-        setRouteShapes(data.shapes || {});
-      } catch (error) {
-        console.error("Error fetching route shapes:", error);
+      const color = getRouteColor(v.routeId);
+      const icon = createVehicleIcon(color, v.bearing, getVehicleType(v.routeId));
+      const marker = L.marker([v.latitude, v.longitude], { icon, zIndexOffset: 1000 });
+
+      // Styled popup HTML
+      marker.bindPopup(`
+        <div class="vehicle-popup-route" style="background:${color}">
+          Route ${v.routeId || "N/A"}
+        </div>
+        <div class="vehicle-popup-body">
+          <div class="vehicle-popup-row">
+            <span class="vehicle-popup-label">Vehicle</span>
+            <span class="vehicle-popup-value">${v.vehicleId || "—"}</span>
+          </div>
+          <div class="vehicle-popup-row">
+            <span class="vehicle-popup-label">Speed</span>
+            <span class="vehicle-popup-value">${v.speed != null ? v.speed.toFixed(1) + " km/h" : "—"}</span>
+          </div>
+          <div class="vehicle-popup-row">
+            <span class="vehicle-popup-label">Bearing</span>
+            <span class="vehicle-popup-value">${v.bearing != null ? v.bearing.toFixed(0) + "°" : "—"}</span>
+          </div>
+          <div class="vehicle-popup-row">
+            <span class="vehicle-popup-label">Updated</span>
+            <span class="vehicle-popup-value">${new Date(v.timestamp).toLocaleTimeString()}</span>
+          </div>
+        </div>
+      `, { maxWidth: 220 });
+
+      group.addLayer(marker);
+    });
+
+    return () => group.clearLayers();
+  }, [vehicles, map, routes]);
+
+  useEffect(() => {
+    return () => {
+      if (clusterGroupRef.current) {
+        map.removeLayer(clusterGroupRef.current);
+        clusterGroupRef.current = null;
       }
     };
+  }, [map]);
 
-    fetchRouteShapes();
+  return null;
+};
+
+const BusMap = ({
+  vehicles,
+  selectedRouteIds = [],
+  routes,
+  routeStops,
+  selectedStop,
+  onStopSelect,
+  tileConfig,
+}) => {
+  const mapCenter = [-36.8485, 174.7633];
+  const bounds = [[-37.6, 173], [-36, 176]];
+  const [routeShapes, setRouteShapes] = useState({});
+
+  const activeTile = tileConfig || MAP_STYLES[DEFAULT_STYLE_ID];
+
+  useEffect(() => {
+    if (!selectedRouteIds.length) { setRouteShapes({}); return; }
+    const API_URL = import.meta.env.VITE_API_URL;
+    fetch(`${API_URL}/api/routes?routeIds=${JSON.stringify(selectedRouteIds)}`)
+      .then((r) => r.json())
+      .then((d) => setRouteShapes(d.shapes || {}))
+      .catch((e) => console.error("Error fetching route shapes:", e));
   }, [selectedRouteIds]);
 
   return (
     <MapContainer
       center={mapCenter}
       zoom={11}
-      minZoom={11}
+      minZoom={10}
+      maxZoom={16}
       scrollWheelZoom={true}
       style={{ height: "100vh", width: "100%" }}
       bounds={bounds}
       maxBounds={bounds}
-      maxBoundsViscosity={1}
+      maxBoundsViscosity={0.8}
       zoomControl={false}
     >
       <TileLayer
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/">CARTO</a>'
-        url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
+        key={activeTile.id}
+        attribution={activeTile.attribution}
+        url={activeTile.url}
       />
       <ZoomControl position="bottomright" />
-      {/* Render route outlines */}
+
       {Object.entries(routeShapes).map(([routeId, shapes]) =>
-        shapes.map((shape, shapeIndex) =>
-          shape.points && shape.points.length > 0 ? (
+        shapes.map((shape, i) =>
+          shape.points?.length > 0 ? (
             <Polyline
-              key={`${routeId}-${shapeIndex}`}
-              positions={shape.points.map((point) => [point.lat, point.lng])}
+              key={`${routeId}-${i}`}
+              positions={shape.points.map((p) => [p.lat, p.lng])}
               color={getRouteColor(routeId)}
-              weight={4}
-              opacity={0.7}
+              weight={3}
+              opacity={0.65}
             >
               <Popup>
-                <b>Route ID:</b> {routeId}
+                <div className="vehicle-popup-route" style={{ background: getRouteColor(routeId) }}>
+                  Route {routeId}
+                </div>
               </Popup>
             </Polyline>
           ) : null
         )
-      )}{" "}
-      {/* Render vehicle icons */}
-      {vehicles.map((vehicle) =>
-        vehicle.latitude && vehicle.longitude && vehicle.routeId ? (
-          <Marker
-            key={vehicle.id} // Use vehicle.id as key
-            position={[vehicle.latitude, vehicle.longitude]}
-            icon={createVehicleIcon(
-              getRouteColor(vehicle.routeId),
-              vehicle.bearing,
-              getVehicleTypeFromRoute(vehicle.routeId)
-            )}
-            zIndexOffset={1000} // Keep markers above polylines
-          >
-            <Popup>
-              <b>Vehicle ID:</b> {vehicle.vehicleId || "N/A"} <br />
-              <b>Route ID:</b> {vehicle.routeId || "N/A"} <br />
-              <b>Trip ID:</b> {vehicle.tripId || "N/A"} <br />
-              <b>Speed:</b>{" "}
-              {vehicle.speed ? `${vehicle.speed.toFixed(1)} km/h` : "N/A"}{" "}
-              <br />
-              <b>Bearing:</b>
-              {vehicle.bearing !== null && vehicle.bearing !== undefined
-                ? `${vehicle.bearing.toFixed(0)}°`
-                : "N/A"}{" "}
-              <br />
-              <b>Timestamp:</b>{" "}
-              {new Date(vehicle.timestamp).toLocaleTimeString()}
-            </Popup>
-          </Marker>
-        ) : null
       )}
+
+      <StopLayer routeStops={routeStops} selectedStop={selectedStop} onStopSelect={onStopSelect} />
+      <ClusterLayer vehicles={vehicles} routes={routes} />
     </MapContainer>
   );
 };
