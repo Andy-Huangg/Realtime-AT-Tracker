@@ -32,7 +32,7 @@ app.use((err, req, res, next) => {
 
 const httpServer = createServer(app);
 const io = new SocketIOServer(httpServer, {
-  cors: { origin: "http://localhost:5173" },
+  cors: { origin: process.env.FRONTEND_URL || "http://localhost:5173" },
 });
 
 atService.on("vehicleUpdate", (payload) => {
