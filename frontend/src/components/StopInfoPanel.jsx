@@ -22,6 +22,17 @@ const StopInfoPanel = ({ selectedStop, routeStops, filteredVehicles, onClose }) 
       .slice(0, 5);
   }, [selectedStop, routeStops, filteredVehicles]);
 
+  // Aggregate all served headsigns for this stop across all loaded routes
+  const servedHeadsigns = useMemo(() => {
+    if (!selectedStop) return [];
+    const hsSet = new Set();
+    for (const stops of Object.values(routeStops || {})) {
+      const found = stops.find((s) => s.stopId === selectedStop.stopId);
+      if (found?.headsigns) found.headsigns.forEach((h) => hsSet.add(h));
+    }
+    return [...hsSet].sort();
+  }, [selectedStop, routeStops]);
+
   return (
     <div className={`stop-panel ${selectedStop ? "visible" : ""}`}>
       {selectedStop && (
@@ -41,9 +52,26 @@ const StopInfoPanel = ({ selectedStop, routeStops, filteredVehicles, onClose }) 
             </button>
           </div>
 
+          {/* Served directions */}
+          {servedHeadsigns.length > 0 && (
+            <div className="stop-panel-directions">
+              <div className="stop-panel-directions-label">Serves</div>
+              <div className="stop-panel-directions-list">
+                {servedHeadsigns.map((h) => (
+                  <span key={h} className="direction-tag">
+                    <svg width="10" height="10" viewBox="0 0 10 10" fill="none" style={{ flexShrink: 0 }}>
+                      <path d="M2 5h6M5.5 2l3 3-3 3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                    {h}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Column headings */}
           <div className="stop-panel-cols">
-            <span>Route</span>
+            <span>Route &amp; Direction</span>
             <span>Distance</span>
             <span>ETA</span>
           </div>
@@ -80,7 +108,10 @@ const StopInfoPanel = ({ selectedStop, routeStops, filteredVehicles, onClose }) 
                       </span>
                       {v.headsign && (
                         <span className="departure-headsign" title={v.headsign}>
-                          → {v.headsign}
+                          <svg width="9" height="9" viewBox="0 0 10 10" fill="none" style={{ flexShrink: 0 }}>
+                            <path d="M2 5h6M5.5 2l3 3-3 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                          </svg>
+                          {v.headsign}
                         </span>
                       )}
                     </div>

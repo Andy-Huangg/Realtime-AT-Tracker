@@ -3,7 +3,7 @@ import { CircleMarker, Popup, useMap, useMapEvents } from "react-leaflet";
 
 const MIN_ZOOM_FOR_STOPS = 12;
 
-const StopLayer = ({ routeStops, selectedStop, onStopSelect }) => {
+const StopLayer = ({ routeStops, selectedStop, onStopSelect, stopsVisible = true }) => {
   const map = useMap();
   const [currentZoom, setCurrentZoom] = useState(() => map.getZoom());
 
@@ -29,7 +29,7 @@ const StopLayer = ({ routeStops, selectedStop, onStopSelect }) => {
     return stops;
   }, [routeStops]);
 
-  if (currentZoom < MIN_ZOOM_FOR_STOPS) return null;
+  if (currentZoom < MIN_ZOOM_FOR_STOPS || !stopsVisible) return null;
 
   return uniqueStops.map((stop) => {
     const isSelected = selectedStop?.stopId === stop.stopId;

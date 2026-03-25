@@ -25,6 +25,7 @@ const BusMap = ({
   const bounds = [[-37.6, 173], [-36, 176]];
   const [routeShapes, setRouteShapes] = useState({});
   const shapeCacheRef = useRef({});
+  const [stopsVisible, setStopsVisible] = useState(true);
 
   const activeTile = tileConfig || MAP_STYLES[DEFAULT_STYLE_ID];
 
@@ -59,13 +60,34 @@ const BusMap = ({
   }, [selectedRouteIds]);
 
   return (
+    <div style={{ position: "relative", height: "100vh", width: "100%" }}>
+    <button
+      className={`stops-toggle-btn ${stopsVisible ? "active" : ""}`}
+      onClick={() => setStopsVisible((v) => !v)}
+      title={stopsVisible ? "Hide stops" : "Show stops"}
+      aria-label={stopsVisible ? "Hide stops" : "Show stops"}
+    >
+      {stopsVisible ? (
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7-10-7-10-7z"/>
+        </svg>
+      ) : (
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
+          <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
+          <line x1="1" y1="1" x2="23" y2="23"/>
+        </svg>
+      )}
+      <span>{stopsVisible ? "Hide Stops" : "Show Stops"}</span>
+    </button>
     <MapContainer
       center={mapCenter}
       zoom={11}
       minZoom={10}
       maxZoom={16}
       scrollWheelZoom={true}
-      style={{ height: "100vh", width: "100%" }}
+      style={{ height: "100%", width: "100%" }}
       bounds={bounds}
       maxBounds={bounds}
       maxBoundsViscosity={0.8}
@@ -100,7 +122,7 @@ const BusMap = ({
       )}
 
       {/* Stop markers */}
-      <StopLayer routeStops={routeStops} selectedStop={selectedStop} onStopSelect={onStopSelect} />
+      <StopLayer routeStops={routeStops} selectedStop={selectedStop} onStopSelect={onStopSelect} stopsVisible={stopsVisible} />
 
       {/* Vehicle markers — individual, no clustering */}
       {vehicles.map((v) => {
@@ -140,6 +162,7 @@ const BusMap = ({
         );
       })}
     </MapContainer>
+    </div>
   );
 };
 

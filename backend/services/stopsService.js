@@ -35,8 +35,9 @@ const buildCache = () => {
       }
     });
 
-  // 2. Parse trips.txt -> routeToTrips: Map<routeId, Set<tripId>>
+  // 2. Parse trips.txt -> routeToTrips: Map<routeId, Set<tripId>>, tripToHeadsign: Map<tripId, string>
   const routeToTrips = new Map();
+  const tripToHeadsign = new Map();
   const tripsData = fs.readFileSync(path.join(GTFS_DIR, "trips.txt"), "utf8");
   tripsData
     .split("\n")
@@ -46,8 +47,10 @@ const buildCache = () => {
       const cols = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
       const routeId = cols[0];
       const tripId = cols[2];
+      const headsign = cols[3]?.replace(/^"|"$/g, "").trim();
       if (!routeToTrips.has(routeId)) routeToTrips.set(routeId, new Set());
       routeToTrips.get(routeId).add(tripId);
+      if (tripId && headsign) tripToHeadsign.set(tripId, headsign);
     });
 
   // 3. Parse stop_times.txt -> tripToStops: Map<tripId, Set<stopId>>
@@ -73,20 +76,34 @@ const buildCache = () => {
       }
     });
 
-  // 4. Join: for each routeId -> all unique stops
+  // 4. Join: for each routeId -> all unique stops with served headsigns
   for (const [routeId, tripIds] of routeToTrips) {
     const stopSet = new Set();
+    const stopHeadsigns = new Map(); // stopId -> Set<headsign>
     for (const tripId of tripIds) {
       const stopIds = tripToStops.get(tripId);
+      const h = tripToHeadsign.get(tripId);
       if (stopIds) {
-        for (const stopId of stopIds) stopSet.add(stopId);
+        for (const stopId of stopIds) {
+          stopSet.add(stopId);
+          if (h) {
+            if (!stopHeadsigns.has(stopId)) stopHeadsigns.set(stopId, new Set());
+            stopHeadsigns.get(stopId).add(h);
+          }
+        }
       }
     }
     const stops = [];
     for (const stopId of stopSet) {
       const info = stopsMap.get(stopId);
       if (info) {
-        stops.push({ stopId, stopName: info.stopName, lat: info.lat, lon: info.lon });
+        stops.push({
+          stopId,
+          stopName: info.stopName,
+          lat: info.lat,
+          lon: info.lon,
+          headsigns: [...(stopHeadsigns.get(stopId) || [])],
+        });
       }
     }
     routeToStopsCache.set(routeId, stops);

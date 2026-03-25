@@ -82,10 +82,51 @@
 
 .stop-panel-close:hover { background: rgba(255, 255, 255, 0.35); }
 
+/* ── Served directions ── */
+.stop-panel-directions {
+  padding: 8px 16px 6px;
+  border-bottom: 1px solid var(--border-subtle);
+  background: var(--bg-elevated);
+}
+
+.stop-panel-directions-label {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+  font-weight: 600;
+  margin-bottom: 5px;
+}
+
+.stop-panel-directions-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.direction-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--accent);
+  background: rgba(0, 177, 191, 0.1);
+  border: 1px solid rgba(0, 177, 191, 0.25);
+  border-radius: 4px;
+  padding: 3px 7px;
+  line-height: 1.2;
+  white-space: nowrap;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 /* ── Column headings ── */
 .stop-panel-cols {
   display: grid;
-  grid-template-columns: 80px 1fr 90px;
+  grid-template-columns: 90px 1fr 80px;
   padding: 6px 16px;
   background: var(--bg-elevated);
   border-bottom: 1px solid var(--border-subtle);
@@ -118,7 +159,7 @@
 /* ── Departure row ── */
 .stop-departure {
   display: grid;
-  grid-template-columns: 80px 1fr 90px;
+  grid-template-columns: 90px 1fr 80px;
   align-items: start;
   padding: 10px 16px;
   border-bottom: 1px solid var(--border-subtle);
@@ -155,13 +196,16 @@
 }
 
 .departure-headsign {
-  font-size: 10px;
-  font-weight: 500;
-  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-primary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 72px;
+  max-width: 84px;
   line-height: 1.2;
 }
 

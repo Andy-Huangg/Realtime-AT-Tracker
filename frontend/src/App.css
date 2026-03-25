@@ -107,6 +107,45 @@ body {
   box-shadow: var(--shadow-card) !important;
 }
 
+/* ── Stops toggle button ── */
+.stops-toggle-btn {
+  position: absolute;
+  bottom: 96px;
+  right: 16px;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  background: var(--bg-surface);
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: var(--shadow-card);
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  transition: background var(--transition-fast), color var(--transition-fast), border-color var(--transition-fast);
+  white-space: nowrap;
+}
+
+.stops-toggle-btn:hover {
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+}
+
+.stops-toggle-btn.active {
+  color: var(--accent);
+  border-color: rgba(0, 177, 191, 0.4);
+}
+
+.stops-toggle-btn.active:hover {
+  background: rgba(0, 177, 191, 0.08);
+}
+
 /* ── Attribution ── */
 .leaflet-control-attribution {
   background: rgba(255, 255, 255, 0.82) !important;
