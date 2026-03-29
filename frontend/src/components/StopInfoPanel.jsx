@@ -22,15 +22,17 @@ const StopInfoPanel = ({ selectedStop, routeStops, filteredVehicles, onClose }) 
       .slice(0, 5);
   }, [selectedStop, routeStops, filteredVehicles]);
 
-  // Aggregate all served headsigns for this stop across all loaded routes
-  const servedHeadsigns = useMemo(() => {
+  // Aggregate served headsigns grouped by route for this stop
+  const servedByRoute = useMemo(() => {
     if (!selectedStop) return [];
-    const hsSet = new Set();
-    for (const stops of Object.values(routeStops || {})) {
+    const result = [];
+    for (const [routeId, stops] of Object.entries(routeStops || {})) {
       const found = stops.find((s) => s.stopId === selectedStop.stopId);
-      if (found?.headsigns) found.headsigns.forEach((h) => hsSet.add(h));
+      if (found?.headsigns?.length) {
+        result.push({ routeId, headsigns: [...found.headsigns].sort() });
+      }
     }
-    return [...hsSet].sort();
+    return result.sort((a, b) => a.routeId.localeCompare(b.routeId));
   }, [selectedStop, routeStops]);
 
   return (
@@ -52,18 +54,30 @@ const StopInfoPanel = ({ selectedStop, routeStops, filteredVehicles, onClose }) 
             </button>
           </div>
 
-          {/* Served directions */}
-          {servedHeadsigns.length > 0 && (
+          {/* Served directions grouped by route */}
+          {servedByRoute.length > 0 && (
             <div className="stop-panel-directions">
               <div className="stop-panel-directions-label">Serves</div>
-              <div className="stop-panel-directions-list">
-                {servedHeadsigns.map((h) => (
-                  <span key={h} className="direction-tag">
-                    <svg width="10" height="10" viewBox="0 0 10 10" fill="none" style={{ flexShrink: 0 }}>
-                      <path d="M2 5h6M5.5 2l3 3-3 3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
-                    {h}
-                  </span>
+              <div className="stop-panel-directions-routes">
+                {servedByRoute.map(({ routeId, headsigns }) => (
+                  <div key={routeId} className="stop-panel-route-group">
+                    <span
+                      className="stop-panel-route-badge"
+                      style={{ background: getRouteColor(routeId) }}
+                    >
+                      {routeId}
+                    </span>
+                    <div className="stop-panel-route-headsigns">
+                      {headsigns.map((h) => (
+                        <span key={h} className="direction-tag">
+                          <svg width="10" height="10" viewBox="0 0 10 10" fill="none" style={{ flexShrink: 0 }}>
+                            <path d="M2 5h6M5.5 2l3 3-3 3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+                          </svg>
+                          {h}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
                 ))}
               </div>
             </div>

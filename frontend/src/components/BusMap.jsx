@@ -20,12 +20,13 @@ const BusMap = ({
   selectedStop,
   onStopSelect,
   tileConfig,
+  stopsVisible,
+  onStopsVisibleChange,
 }) => {
   const mapCenter = [-36.8485, 174.7633];
   const bounds = [[-37.6, 173], [-36, 176]];
   const [routeShapes, setRouteShapes] = useState({});
   const shapeCacheRef = useRef({});
-  const [stopsVisible, setStopsVisible] = useState(true);
 
   const activeTile = tileConfig || MAP_STYLES[DEFAULT_STYLE_ID];
 
@@ -63,7 +64,7 @@ const BusMap = ({
     <div style={{ position: "relative", height: "100vh", width: "100%" }}>
     <button
       className={`stops-toggle-btn ${stopsVisible ? "active" : ""}`}
-      onClick={() => setStopsVisible((v) => !v)}
+      onClick={() => onStopsVisibleChange((v) => !v)}
       title={stopsVisible ? "Hide stops" : "Show stops"}
       aria-label={stopsVisible ? "Hide stops" : "Show stops"}
     >

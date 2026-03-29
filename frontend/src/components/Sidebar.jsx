@@ -15,6 +15,8 @@ const Sidebar = ({
   selectedStop,
   onStopSelect,
   routeStops,
+  stopsVisible,
+  onStopsVisibleChange,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("routes");
@@ -180,6 +182,23 @@ const Sidebar = ({
                     </span>
                   </div>
                 </div>
+              </div>
+
+              {/* Stops visibility toggle */}
+              <div className="info-section">
+                <div className="info-section-title">Map Layers</div>
+                <button
+                  className={`stops-sidebar-toggle ${stopsVisible ? "active" : ""}`}
+                  onClick={() => onStopsVisibleChange((v) => !v)}
+                >
+                  <span className="stops-sidebar-toggle-dot" />
+                  <span className="stops-sidebar-toggle-label">
+                    Stop markers
+                  </span>
+                  <span className="stops-sidebar-toggle-state">
+                    {stopsVisible ? "Visible" : "Hidden"}
+                  </span>
+                </button>
               </div>
             </div>
           )}

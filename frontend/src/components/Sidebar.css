@@ -328,6 +328,64 @@
   z-index: 999;
 }
 
+/* ── Stops sidebar toggle ── */
+.stops-sidebar-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 10px 12px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background var(--transition-fast), border-color var(--transition-fast);
+}
+
+.stops-sidebar-toggle:hover {
+  background: var(--bg-surface);
+}
+
+.stops-sidebar-toggle.active {
+  border-color: rgba(0, 177, 191, 0.4);
+}
+
+.stops-sidebar-toggle-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--text-muted);
+  flex-shrink: 0;
+  transition: background var(--transition-fast);
+}
+
+.stops-sidebar-toggle.active .stops-sidebar-toggle-dot {
+  background: var(--accent);
+  box-shadow: 0 0 6px rgba(0, 177, 191, 0.4);
+}
+
+.stops-sidebar-toggle-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-primary);
+  flex: 1;
+  text-align: left;
+}
+
+.stops-sidebar-toggle-state {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  transition: color var(--transition-fast);
+}
+
+.stops-sidebar-toggle.active .stops-sidebar-toggle-state {
+  color: var(--accent);
+}
+
 @media (max-width: 768px) {
   .sidebar { width: 300px; }
 }

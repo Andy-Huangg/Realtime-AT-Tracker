@@ -105,6 +105,36 @@
   gap: 4px;
 }
 
+.stop-panel-directions-routes {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.stop-panel-route-group {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.stop-panel-route-badge {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  color: white;
+  padding: 3px 6px;
+  border-radius: 4px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.stop-panel-route-headsigns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+}
+
 .direction-tag {
   display: inline-flex;
   align-items: center;

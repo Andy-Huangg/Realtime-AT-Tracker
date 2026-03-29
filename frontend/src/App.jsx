@@ -25,6 +25,7 @@ function App() {
   const [selectedStop, setSelectedStop] = useState(null);
   const [routeStops, setRouteStops] = useState({});
   const [mapStyleId, setMapStyleId] = useState(DEFAULT_STYLE_ID);
+  const [stopsVisible, setStopsVisible] = useState(true);
 
   useEffect(() => {
     localStorage.setItem("selectedRoutes", JSON.stringify(selectedRouteIds));
@@ -59,6 +60,8 @@ function App() {
         selectedStop={selectedStop}
         onStopSelect={setSelectedStop}
         routeStops={routeStops}
+        stopsVisible={stopsVisible}
+        onStopsVisibleChange={setStopsVisible}
       />
       <BusMap
         vehicles={filteredVehicles}
@@ -68,6 +71,8 @@ function App() {
         selectedStop={selectedStop}
         onStopSelect={setSelectedStop}
         tileConfig={MAP_STYLES[mapStyleId]}
+        stopsVisible={stopsVisible}
+        onStopsVisibleChange={setStopsVisible}
       />
       <MapStyleSelector
         currentStyleId={mapStyleId}
