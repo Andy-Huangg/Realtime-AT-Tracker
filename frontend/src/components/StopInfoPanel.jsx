@@ -22,14 +22,18 @@ const StopInfoPanel = ({ selectedStop, routeStops, filteredVehicles, onClose }) 
       .slice(0, 5);
   }, [selectedStop, routeStops, filteredVehicles]);
 
-  // Aggregate served headsigns grouped by route for this stop
+  // Aggregate served headsigns grouped by route for this stop (with bearings)
   const servedByRoute = useMemo(() => {
     if (!selectedStop) return [];
     const result = [];
     for (const [routeId, stops] of Object.entries(routeStops || {})) {
       const found = stops.find((s) => s.stopId === selectedStop.stopId);
       if (found?.headsigns?.length) {
-        result.push({ routeId, headsigns: [...found.headsigns].sort() });
+        result.push({
+          routeId,
+          headsigns: [...found.headsigns].sort(),
+          bearings: found.bearings || {},
+        });
       }
     }
     return result.sort((a, b) => a.routeId.localeCompare(b.routeId));
@@ -59,7 +63,7 @@ const StopInfoPanel = ({ selectedStop, routeStops, filteredVehicles, onClose }) 
             <div className="stop-panel-directions">
               <div className="stop-panel-directions-label">Serves</div>
               <div className="stop-panel-directions-routes">
-                {servedByRoute.map(({ routeId, headsigns }) => (
+                {servedByRoute.map(({ routeId, headsigns, bearings }) => (
                   <div key={routeId} className="stop-panel-route-group">
                     <span
                       className="stop-panel-route-badge"
@@ -70,7 +74,7 @@ const StopInfoPanel = ({ selectedStop, routeStops, filteredVehicles, onClose }) 
                     <div className="stop-panel-route-headsigns">
                       {headsigns.map((h) => (
                         <span key={h} className="direction-tag">
-                          <svg width="10" height="10" viewBox="0 0 10 10" fill="none" style={{ flexShrink: 0 }}>
+                          <svg width="10" height="10" viewBox="0 0 10 10" fill="none" style={{ flexShrink: 0, transform: bearings[h] != null ? `rotate(${bearings[h] - 90}deg)` : undefined }}>
                             <path d="M2 5h6M5.5 2l3 3-3 3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
                           </svg>
                           {h}
@@ -122,7 +126,7 @@ const StopInfoPanel = ({ selectedStop, routeStops, filteredVehicles, onClose }) 
                       </span>
                       {v.headsign && (
                         <span className="departure-headsign" title={v.headsign}>
-                          <svg width="9" height="9" viewBox="0 0 10 10" fill="none" style={{ flexShrink: 0 }}>
+                          <svg width="9" height="9" viewBox="0 0 10 10" fill="none" style={{ flexShrink: 0, transform: v.bearing != null ? `rotate(${v.bearing - 90}deg)` : undefined }}>
                             <path d="M2 5h6M5.5 2l3 3-3 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                           </svg>
                           {v.headsign}

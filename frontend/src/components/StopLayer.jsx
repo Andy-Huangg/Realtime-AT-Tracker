@@ -23,10 +23,11 @@ const StopLayer = ({ routeStops, selectedStop, onStopSelect, stopsVisible = true
       for (const stop of routeStops[routeId] || []) {
         if (stopMap.has(stop.stopId)) {
           const existing = stopMap.get(stop.stopId);
-          // Merge headsigns from this route
+          // Merge headsigns and bearings from this route
           for (const h of stop.headsigns || []) {
             existing.headsignSet.add(h);
           }
+          Object.assign(existing.bearings, stop.bearings || {});
           // Track which routes serve this stop with their headsigns
           if (!existing.routeHeadsigns[routeId]) {
             existing.routeHeadsigns[routeId] = [];
@@ -40,6 +41,7 @@ const StopLayer = ({ routeStops, selectedStop, onStopSelect, stopsVisible = true
           stopMap.set(stop.stopId, {
             ...stop,
             headsignSet: new Set(stop.headsigns || []),
+            bearings: { ...(stop.bearings || {}) },
             routeHeadsigns: {
               [routeId]: [...(stop.headsigns || [])],
             },
@@ -55,6 +57,7 @@ const StopLayer = ({ routeStops, selectedStop, onStopSelect, stopsVisible = true
   return uniqueStops.map((stop) => {
     const isSelected = selectedStop?.stopId === stop.stopId;
     const routeEntries = Object.entries(stop.routeHeadsigns || {});
+    const bearings = stop.bearings || {};
     return (
       <CircleMarker
         key={stop.stopId}
@@ -83,7 +86,15 @@ const StopLayer = ({ routeStops, selectedStop, onStopSelect, stopsVisible = true
                       {routeId}
                     </span>
                     <span className="stop-popup-headsigns">
-                      {headsigns.join(", ")}
+                      {headsigns.map((h, i) => (
+                        <span key={h}>
+                          {i > 0 && ", "}
+                          <svg width="9" height="9" viewBox="0 0 10 10" fill="none" style={{ verticalAlign: "middle", transform: bearings[h] != null ? `rotate(${bearings[h] - 90}deg)` : undefined }}>
+                            <path d="M2 5h6M5.5 2l3 3-3 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                          </svg>
+                          {" "}{h}
+                        </span>
+                      ))}
                     </span>
                   </div>
                 ))}

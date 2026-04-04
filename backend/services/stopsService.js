@@ -11,6 +11,17 @@ const GTFS_DIR = path.join(__dirname, "../data/gtfsdata");
 const routeToStopsCache = new Map();
 let cachePopulated = false;
 
+// Compute bearing (degrees 0-360) between two lat/lon points
+const computeBearing = (lat1, lon1, lat2, lon2) => {
+  const toRad = (d) => (d * Math.PI) / 180;
+  const φ1 = toRad(lat1);
+  const φ2 = toRad(lat2);
+  const Δλ = toRad(lon2 - lon1);
+  const y = Math.sin(Δλ) * Math.cos(φ2);
+  const x = Math.cos(φ1) * Math.sin(φ2) - Math.sin(φ1) * Math.cos(φ2) * Math.cos(Δλ);
+  return ((Math.atan2(y, x) * 180) / Math.PI + 360) % 360;
+};
+
 const buildCache = () => {
   if (cachePopulated) return;
 
@@ -53,8 +64,9 @@ const buildCache = () => {
       if (tripId && headsign) tripToHeadsign.set(tripId, headsign);
     });
 
-  // 3. Parse stop_times.txt -> tripToStops: Map<tripId, Set<stopId>>
+  // 3. Parse stop_times.txt -> tripToStops (Set) + tripToStopSeq (ordered array)
   const tripToStops = new Map();
+  const tripToStopSeq = new Map(); // tripId -> [{stopId, seq}] (built then sorted)
   const stopTimesData = fs.readFileSync(
     path.join(GTFS_DIR, "stop_times.txt"),
     "utf8"
@@ -70,13 +82,56 @@ const buildCache = () => {
       const rest = line.substring(commaIdx + 1);
       const cols = rest.split(",");
       const stopId = cols[2]; // arrival, departure, stop_id
+      const seq = parseInt(cols[3], 10); // stop_sequence
       if (tripId && stopId) {
         if (!tripToStops.has(tripId)) tripToStops.set(tripId, new Set());
         tripToStops.get(tripId).add(stopId);
+        if (!tripToStopSeq.has(tripId)) tripToStopSeq.set(tripId, []);
+        tripToStopSeq.get(tripId).push({ stopId, seq });
       }
     });
 
-  // 4. Join: for each routeId -> all unique stops with served headsigns
+  // Sort each trip's stops by sequence
+  for (const [, arr] of tripToStopSeq) {
+    arr.sort((a, b) => a.seq - b.seq);
+  }
+
+  // 4. Compute bearing at each stop per headsign using circular mean
+  //    Key: "stopId|headsign" -> { sinSum, cosSum, count }
+  const bearingAccum = new Map();
+  for (const [tripId, seqArr] of tripToStopSeq) {
+    const h = tripToHeadsign.get(tripId);
+    if (!h || seqArr.length < 2) continue;
+    for (let i = 0; i < seqArr.length; i++) {
+      const cur = stopsMap.get(seqArr[i].stopId);
+      // Use next stop for bearing; for last stop use previous
+      const neighbor = i < seqArr.length - 1
+        ? stopsMap.get(seqArr[i + 1].stopId)
+        : stopsMap.get(seqArr[i - 1].stopId);
+      if (!cur || !neighbor) continue;
+      const bearing = i < seqArr.length - 1
+        ? computeBearing(cur.lat, cur.lon, neighbor.lat, neighbor.lon)
+        : computeBearing(neighbor.lat, neighbor.lon, cur.lat, cur.lon);
+      const key = `${seqArr[i].stopId}|${h}`;
+      const rad = (bearing * Math.PI) / 180;
+      if (!bearingAccum.has(key)) {
+        bearingAccum.set(key, { sinSum: 0, cosSum: 0, count: 0 });
+      }
+      const acc = bearingAccum.get(key);
+      acc.sinSum += Math.sin(rad);
+      acc.cosSum += Math.cos(rad);
+      acc.count++;
+    }
+  }
+
+  // Resolve circular means to degree bearings
+  const bearingMap = new Map(); // "stopId|headsign" -> bearing (0-360)
+  for (const [key, { sinSum, cosSum }] of bearingAccum) {
+    const avgRad = Math.atan2(sinSum, cosSum);
+    bearingMap.set(key, ((avgRad * 180) / Math.PI + 360) % 360);
+  }
+
+  // 5. Join: for each routeId -> all unique stops with served headsigns + bearings
   for (const [routeId, tripIds] of routeToTrips) {
     const stopSet = new Set();
     const stopHeadsigns = new Map(); // stopId -> Set<headsign>
@@ -97,12 +152,19 @@ const buildCache = () => {
     for (const stopId of stopSet) {
       const info = stopsMap.get(stopId);
       if (info) {
+        const headsigns = [...(stopHeadsigns.get(stopId) || [])];
+        const bearings = {};
+        for (const h of headsigns) {
+          const b = bearingMap.get(`${stopId}|${h}`);
+          if (b != null) bearings[h] = Math.round(b);
+        }
         stops.push({
           stopId,
           stopName: info.stopName,
           lat: info.lat,
           lon: info.lon,
-          headsigns: [...(stopHeadsigns.get(stopId) || [])],
+          headsigns,
+          bearings,
         });
       }
     }
