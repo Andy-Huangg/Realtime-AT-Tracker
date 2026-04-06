@@ -33,7 +33,7 @@ const MapStyleSelector = ({ currentStyleId, onStyleChange }) => {
               <button
                 key={style.id}
                 className={`map-style-option ${currentStyleId === style.id ? "active" : ""}`}
-                onClick={() => { onStyleChange(style.id); setIsOpen(false); }}
+                onClick={() => onStyleChange(style.id)}
               >
                 <div
                   className="map-style-swatch"
